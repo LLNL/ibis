@@ -37,54 +37,54 @@ after_script:
   - echo "End Test Run"
    
 stages: 
-  - static analysis
+  #- static analysis
   - test
 
-black_on-commit:
-  stage: static analysis
-  rules:
-  - if: '$CI_PIPELINE_SOURCE == "schedule"'
-    when: never
-  - if: '$CI_COMMIT_BRANCH == "main"'
-  allow_failure: true
-  tags:
-    - shell
-    - borax
-  script:
-    - files=$(git diff-tree --no-commit-id --name-only -r $CI_COMMIT_SHA)
-    - if [ ! -z "${files}" ]; then pythonfiles=$(find $files -type f \( -name "*.py" -print -o -exec awk ' /^#!.*python/{print FILENAME} {nextfile}' {} + \)); fi
-    - echo $files
-    - echo $pythonfiles
-    - email=$(git show -s --format='%ae' $CI_COMMIT_SHA)
-    - echo $email
-    - source /usr/WS1/healy22/static_analysis_env/bin/activate
-    - if [ ! -z "${pythonfiles}" ]; then black --diff $pythonfiles 1> black_diff.txt 2> black_report.txt || true && echo "Black Results for Commit $CI_COMMIT_SHA" | mail -a black_diff.txt -a black_report.txt -s "UQP On-Commit Black Report" $email; else echo "No python files for Black analysis" > black_report.txt; fi
-    - deactivate
-  artifacts:
-    when: always
-    paths:
-      - black_report.txt
+# black_on-commit:
+#   stage: static analysis
+#   rules:
+#   - if: '$CI_PIPELINE_SOURCE == "schedule"'
+#     when: never
+#   - if: '$CI_COMMIT_BRANCH == "main"'
+#   allow_failure: true
+#   tags:
+#     - shell
+#     - borax
+#   script:
+#     - files=$(git diff-tree --no-commit-id --name-only -r $CI_COMMIT_SHA)
+#     - if [ ! -z "${files}" ]; then pythonfiles=$(find $files -type f \( -name "*.py" -print -o -exec awk ' /^#!.*python/{print FILENAME} {nextfile}' {} + \)); fi
+#     - echo $files
+#     - echo $pythonfiles
+#     - email=$(git show -s --format='%ae' $CI_COMMIT_SHA)
+#     - echo $email
+#     - source /usr/WS1/healy22/static_analysis_env/bin/activate
+#     - if [ ! -z "${pythonfiles}" ]; then black --diff $pythonfiles 1> black_diff.txt 2> black_report.txt || true && echo "Black Results for Commit $CI_COMMIT_SHA" | mail -a black_diff.txt -a black_report.txt -s "UQP On-Commit Black Report" $email; else echo "No python files for Black analysis" > black_report.txt; fi
+#     - deactivate
+#   artifacts:
+#     when: always
+#     paths:
+#       - black_report.txt
 
-black_monthly:
-  stage: static analysis
-  rules:
-  - if: '$MONTHLY == "TRUE"'
-  allow_failure: true
-  tags:
-    - shell
-    - borax
-  script:
-    - pythonfiles=$(find core -type f \( -name "*.py" -print -o -exec awk ' /^#!.*python/{print FILENAME} {nextfile}' {} + \))
-    - echo $pythonfiles
-    - email="healy22@llnl.gov domyancic1@llnl.gov"
-    - echo $email
-    - source /usr/WS1/healy22/static_analysis_env/bin/activate
-    - if [ ! -z "${pythonfiles}" ]; then black --diff $pythonfiles 1> black_diff.txt 2> black_report.txt || true && echo "Black Results" | mail -a black_diff.txt -a black_report.txt -s "Monthly UQP Black Report" $email; else echo "No python files for Black analysis" > black_report.txt; fi
-    - deactivate
-  artifacts:
-    when: always
-    paths:
-      - black_report.txt
+# black_monthly:
+#   stage: static analysis
+#   rules:
+#   - if: '$MONTHLY == "TRUE"'
+#   allow_failure: true
+#   tags:
+#     - shell
+#     - borax
+#   script:
+#     - pythonfiles=$(find core -type f \( -name "*.py" -print -o -exec awk ' /^#!.*python/{print FILENAME} {nextfile}' {} + \))
+#     - echo $pythonfiles
+#     - email="healy22@llnl.gov domyancic1@llnl.gov"
+#     - echo $email
+#     - source /usr/WS1/healy22/static_analysis_env/bin/activate
+#     - if [ ! -z "${pythonfiles}" ]; then black --diff $pythonfiles 1> black_diff.txt 2> black_report.txt || true && echo "Black Results" | mail -a black_diff.txt -a black_report.txt -s "Monthly UQP Black Report" $email; else echo "No python files for Black analysis" > black_report.txt; fi
+#     - deactivate
+#   artifacts:
+#     when: always
+#     paths:
+#       - black_report.txt
 
 quartz_test:
   stage: test
