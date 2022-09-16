@@ -17,7 +17,7 @@ sys.path.insert(0, os.path.abspath(__file__).rsplit(os.sep, 3)[0])
 
 # -- Project information -----------------------------------------------------
 
-project = 'UQP'
+project = 'UQ Methods'
 copyright = '2021, Keith Healy, Andrew Fillmore, David Domyancic, James Corbett'
 author = 'Keith Healy, Andrew Fillmore, David Domyancic, James Corbett'
 
@@ -156,7 +156,7 @@ html_use_smartypants = True
 # html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'uqpdoc'
+htmlhelp_basename = 'uqdoc'
 
 # -- Options for LaTeX output --------------------------------------------------
 
@@ -174,7 +174,7 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-    ('index', 'uqp.tex', 'UQP Documentation',
+    ('index', 'uq.tex', 'UQ Methods Documentation',
      author, 'manual'),
 ]
 
@@ -204,7 +204,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'uqp', 'UQP Documentation',
+    ('index', 'uq-methods', 'UQ Methods  Documentation',
      author, 1)
 ]
 
@@ -218,8 +218,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    ('index', 'uqp', 'UQP Documentation',
-     author, 'uqp', 'One line description of project.',
+    ('index', 'uq-methods', 'UQ Methods  Documentation',
+     author, 'uq-methods', 'One line description of project.',
      'Miscellaneous'),
 ]
 

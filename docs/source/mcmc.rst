@@ -1,7 +1,7 @@
-UQP MCMC
+MCMC
 ========
 
-The UQP MCMC component allows a user to analyse the results coupled experiments and simulations.
+The MCMC component allows a user to analyse the results coupled experiments and simulations.
 A user should already have observed values from an experiment with error bounds and surrogate models mapping
 unobserved inputs to the observed quantities of interest. The results of the analysis will be a set of points drawn
 as if from the distribution of unobserved inputs that would most likely produce the observed outputs (with error bounds.)
@@ -307,7 +307,6 @@ Hill Example
 ------------
 
 The hill function is an analytic function that allows us to demonstrate how MCMC can work in practice.
-An implementation of the Hill Function example can be found here: :ref:`uqp_examples:Hill`.
 It is a multivariate function defined as
 
 .. math::
@@ -351,6 +350,12 @@ We have a set of :math:`(x,y)` pairs:
 These points represent our known data.
 The points were "observed" with random noise.
 This means that there is uncertainty about the exact values.
+
+An example implementation of the Hill Function:
+
+.. literalinclude:: ../../examples/Hill_Function_Separate/hill_driver_mcmc.py
+   :language: python
+
 
 Inverse UQ
 ~~~~~~~~~~
@@ -502,8 +507,9 @@ Example of Good Convergence
 .. figure:: _static/converged.png
    :alt: Converged
 
+
 MCMC API
 ---------------
 
-.. automodule:: uq_methods.uqp_mcmc
+.. automodule:: uq_methods.mcmc
    :members: MCMC, DefaultMCMC, DiscrepancyMCMC

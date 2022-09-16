@@ -1,51 +1,65 @@
-import os
+# Setup script for sampling-methods repo
+from setuptools import setup, find_packages
+from subprocess import Popen, PIPE
 
-import setuptools
+version = "1.0"
+sha = None
+git_describe_process = Popen(
+    ("git",
+     "describe",
+     "--tags"),
+    stdout=PIPE,
+    stderr=PIPE)
+try:
+    out, _ = git_describe_process.communicate()
+    version = out.decode("utf-8")
+    sp = version.split("-")
+    version = sp[0]
+    # Clean tag?
+    if len(sp) != 0:
+        commits = sp[1]
+        sha = sp[2]
+        version += "."+commits
+    else:
+        sha = None
+except Exception:
+    pass
 
+# Provide better description
+description="LLNL's UQ Methods"
+if sha is not None:
+    description += " (sha: {})".format(sha)
 
-_SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
+with open("README.md", "r") as fh:
+    long_description = fh.read()
 
-
-def read_long_description():
-    readme_path = os.path.join(
-        _SCRIPT_DIR,
-        "README.md"
-    )
-    with open(readme_path, "r") as fh:
-        return fh.read()
-
-
-if __name__ == "__main__":
-    setuptools.setup(
-        name="uqpipeline",
-        version="0.0.1.dev1",
-        author="LLNL UQP Team",
-        author_email="uqpipeline-devs@llnl.gov",
-        description="LLNL's UQ Pipeline",
-        url="https://lc.llnl.gov/bitbucket/projects/UQP/repos/uqp/",
-        long_description=read_long_description(),
-        long_description_content_type="text/markdown",
-        packages=setuptools.find_packages(
-            where=_SCRIPT_DIR,
-            include=["uqp" + ".*" * i for i in range(0, 5)] + ["themis" + ".*" * i for i in range(0, 5)]
-        ),
-        install_requires=[
-            "numpy>=1.15",
+setup(name="uq-methods",
+      version=version,
+     #version="0.0.1.dev1",
+      description=description,
+      url="https://github.com/LLNL/uq-methods",
+     #url="https://lc.llnl.gov/bitbucket/projects/UQP/repos/uqp/",
+      author="Sarah El-Jurf",
+      author_email="eljurf1@llnl.gov",
+     #author="LLNL UQP Team",
+     #author_email="uqpipeline-devs@llnl.gov",
+      long_description=long_description,
+      long_description_content_type="text/markdown",
+      license="BSD 3-Clause",
+      packages=find_packages(),
+      zip_safe=False,
+      install_requires=[
+            "numpy>=1.15,<1.19",
             "scikit-learn",
             "scipy",
             "matplotlib",
-        ],
-        classifiers=[
+      ],
+      classifiers=[
             "Programming Language :: Python :: 3",
             "Programming Language :: Python :: 2.7",
             "Operating System :: OS Independent",
-        ],
-        python_requires=">=3.6, >=2.7.16, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*",
-        entry_points={
-            "console_scripts": [
-                "themis = themis.__main__:main",
-                "themis-laf = themis.laf:main",
-            ],
-        },
-    )
-
+      ],
+      python_requires=">=3.6, >=2.7.16, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*",
+      )
+# Only when logo is made
+# Popen(("scripts/render_logos.py",)).communicate()

@@ -10,8 +10,8 @@ import numpy as np
 import scipy.stats as sts
 from sklearn.gaussian_process import GaussianProcessRegressor
 
-from uq_methods import uqp_mcmc
-from uq_methods import uqp_filter
+from uq_methods import mcmc
+from uq_methods import filter
 from uq_methods import likelihoods
 
 
@@ -85,7 +85,7 @@ class TestUQMethods(unittest.TestCase):
     @unittest.expectedFailure
     def test_default_mcmc(self):
 
-        mcmc = uqp_mcmc.DefaultMCMC()
+        mcmc = mcmc.DefaultMCMC()
 
         for name in self.input_names:
             mcmc.add_input(name, 0.0, 1.0, .2, sts.beta(2, 2).pdf)
@@ -146,7 +146,7 @@ class TestUQMethods(unittest.TestCase):
     @unittest.expectedFailure
     def test_discrepancy_mcmc(self):
 
-        mcmc = uqp_mcmc.DiscrepancyMCMC()
+        mcmc = mcmc.DiscrepancyMCMC()
 
         for name in self.input_names:
             mcmc.add_input(name, 0.0, 1.0, .2, sts.beta(2, 2).pdf)
@@ -217,7 +217,7 @@ class TestUQMethods(unittest.TestCase):
 
     def test_gaussian_filter(self):
 
-        gaussian_filter = uqp_filter.GaussianFilter()
+        gaussian_filter = filter.GaussianFilter()
 
         weights_actual = gaussian_filter.get_weights(self.X, .5, .1, sigma_cut=2.0)
 
@@ -251,7 +251,7 @@ class TestUQMethods(unittest.TestCase):
         np.testing.assert_array_almost_equal(weights_expected, weights_actual)
 
     def test_log_gaussian_filter(self):
-        log_gaussian_filter = uqp_filter.LogGaussianFilter()
+        log_gaussian_filter = filter.LogGaussianFilter()
 
         weights_actual = log_gaussian_filter.get_weights(self.X, .5, .1, sigma_cut=2.0)
 
@@ -310,7 +310,7 @@ class TestUQMethods(unittest.TestCase):
         np.testing.assert_array_almost_equal(weights_expected, weights_actual)
 
     def test_student_t_filter(self):
-        student_t_filter = uqp_filter.StudentTFilter()
+        student_t_filter = filter.StudentTFilter()
 
         weights_actual = student_t_filter.get_weights(self.X, .5, .1, sigma_cut=2.0)
 
@@ -344,7 +344,7 @@ class TestUQMethods(unittest.TestCase):
         np.testing.assert_array_almost_equal(weights_expected, weights_actual)
 
     def test_tophat_filter(self):
-        tophat_filter = uqp_filter.TophatFilter()
+        tophat_filter = filter.TophatFilter()
 
         weights_actual = tophat_filter.get_weights(self.X, .5, .1, sigma_cut=.1)
 
@@ -368,7 +368,7 @@ class TestUQMethods(unittest.TestCase):
         np.testing.assert_array_almost_equal(weights_expected, weights_actual)
 
     def test_log_tophat_filter(self):
-        log_tophat_filter = uqp_filter.LogTophatFilter()
+        log_tophat_filter = filter.LogTophatFilter()
 
         weights_actual = log_tophat_filter.get_weights(self.X, .5, .1, sigma_cut=1.0)
 
@@ -392,7 +392,7 @@ class TestUQMethods(unittest.TestCase):
         np.testing.assert_array_almost_equal(weights_expected, weights_actual)
 
     def test_gaussian_mixture_filter(self):
-        gaussian_mixture_filter = uqp_filter.GaussianMixtureFilter()
+        gaussian_mixture_filter = filter.GaussianMixtureFilter()
 
         weights_actual = gaussian_mixture_filter.get_weights(self.X,
                                                              np.array([[.5, .5, .5]]),
@@ -423,7 +423,7 @@ class TestUQMethods(unittest.TestCase):
     def test_intersection_likelihood(self):
         likelihood = likelihoods.Intersection()
 
-        weights = uqp_filter.GaussianFilter().get_weights(self.X, 0.5, .3, sigma_cut=1.0)
+        weights = filter.GaussianFilter().get_weights(self.X, 0.5, .3, sigma_cut=1.0)
 
         combined_weights_actual = likelihood.combine_weights(weights.T)
 
@@ -440,7 +440,7 @@ class TestUQMethods(unittest.TestCase):
     def test_stat_filtering_likelihood(self):
         likelihood = likelihoods.StatFiltering()
 
-        weights = uqp_filter.GaussianFilter().get_weights(self.X, 0.5, .3, sigma_cut=1.0)
+        weights = filter.GaussianFilter().get_weights(self.X, 0.5, .3, sigma_cut=1.0)
 
         combined_weights_actual = likelihood.combine_weights(weights.T)
 
