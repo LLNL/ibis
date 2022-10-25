@@ -2,56 +2,16 @@ before_script:
   - env
 
 stages: 
-  - static analysis
   - test
 
-.run_analysis:
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "schedule"'
-      when: never
-    - if: '$CI_COMMIT_BRANCH == "main"'
-    - if: '$CI_COMMIT_BRANCH == "develop"'
-  allow_failure: true
-  tags:
-    - shell
-    - borax
-  script:
-    - echo "analyzing code"
-    - echo "Activating static analyzer"
-    - files=$(git diff-tree --no-commit-id --name-only -r $CI_COMMIT_SHA)
-    - if [ ! -z "${files}" ]; then pythonfiles=$(find $files -type f \( -name "*.py" -print -o -exec awk ' /^#!.*python/{print FILENAME} {nextfile}' {} + \)); fi
-    - echo $files
-    - echo $pythonfiles
-    - email=$(git show -s --format='%ae' $CI_COMMIT_SHA)
-    - echo $email
-    - source /usr/WS1/healy22/static_analysis_env/bin/activate
-    - if [ ! -z "${pythonfiles}" ]; then black --diff $pythonfiles 1> black_diff.txt 2> black_report.txt || true && echo "Black Results for Commit $CI_COMMIT_SHA" | mail -a black_diff.txt -a black_report.txt -s "UQP On-Commit Black Report" $email; else echo "No python files for Black analysis" > black_report.txt; fi
-    - deactivate
-  artifacts:
-    when: always
-    paths:
-      - black_report.txt
-
-.run_tests_py2:
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
-    - if: '$CI_COMMIT_BRANCH == "develop"'
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-  script: 
-    - pip install pytest
-    - if [[ $HOSTNAME =~ "borax" ]]; then  python -m pytest --junitxml="borax_results.xml"; elif [[ $HOSTNAME =~ "quartz" ]]; then python -m pytest --junitxml="quartz_results.xml"; fi || true
-  artifacts:
-    reports:
-      junit: "*_results.xml"
-
-.run_tests_py3:
+.run_test:
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
     - if: '$CI_COMMIT_BRANCH == "branch"'
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
   script: 
     - pip install pytest
-    - if [[ $HOSTNAME =~ "borax" ]]; then python -m pytest --junitxml="borax_results.xml"; elif [[ $HOSTNAME =~ "quartz" ]]; then python -m pytest --junitxml="quartz_results.xml"; fi || true
+    - if [[ $HOSTNAME =~ "borax" ]]; then python -m pytest --junitxml="borax_results.xml"; elif [[ $HOSTNAME =~ "quartz" ]]; then python3 -m pytest --junitxml="quartz_results.xml"; fi || true
   artifacts:
     reports:
       junit: "*_results.xml"
@@ -66,30 +26,14 @@ stages:
     - quartz
     - shell
 
-analyze:
-  stage: static analysis
-  extends: [  .run_analysis ]
-
-test_py2_borax:
-  image: python:2.7
-  stage: test
-  coverage: /(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/
-  extends: [  .run_tests_py2 , .on_borax  ]
-
-test_py2_quartz:
-  image: python:2.7
-  stage: test
-  coverage: /(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/
-  extends: [  .run_tests_py2 , .on_quartz  ]
-
-test_py3_borax:
+test_borax:
   image: python:3.6
   stage: test
   coverage: /(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/
-  extends: [  .run_tests_py3 , .on_borax  ]
+  extends: [  .run_test , .on_borax  ]
 
-test_py3_quartz:
+test_quartz:
   image: python:3.6
   stage: test
   coverage: /(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/
-  extends: [  .run_tests_py3 , .on_quartz  ]
+  extends: [  .run_test , .on_quartz  ]

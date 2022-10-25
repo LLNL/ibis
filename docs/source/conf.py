@@ -17,12 +17,12 @@ sys.path.insert(0, os.path.abspath(__file__).rsplit(os.sep, 3)[0])
 
 # -- Project information -----------------------------------------------------
 
-project = 'UQ Methods'
+project = 'IBIS'
 copyright = '2021, Keith Healy, Andrew Fillmore, David Domyancic, James Corbett'
 author = 'Keith Healy, Andrew Fillmore, David Domyancic, James Corbett'
 
 # The full version, including alpha/beta/rc tags
-release = '0.1'
+release = '1.0.0'
 
 # -- General configuration ---------------------------------------------------
 
@@ -156,7 +156,7 @@ html_use_smartypants = True
 # html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'uqdoc'
+htmlhelp_basename = 'ibisdoc'
 
 # -- Options for LaTeX output --------------------------------------------------
 
@@ -174,7 +174,7 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-    ('index', 'uq.tex', 'UQ Methods Documentation',
+    ('index', 'ibis.tex', 'IBIS Documentation',
      author, 'manual'),
 ]
 
@@ -204,7 +204,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'uq-methods', 'UQ Methods  Documentation',
+    ('index', 'ibis', 'IBIS Documentation',
      author, 1)
 ]
 
@@ -218,8 +218,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    ('index', 'uq-methods', 'UQ Methods  Documentation',
-     author, 'uq-methods', 'One line description of project.',
+    ('index', 'ibis', 'IBIS Documentation',
+     author, 'ibis', 'Interactive Bayesian Inference and Sensitivity',
      'Miscellaneous'),
 ]
 

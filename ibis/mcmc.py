@@ -20,7 +20,7 @@ import mpl_toolkits.axes_grid1
 import numpy as np
 import scipy.stats as sts
 
-from uq_methods import mcmc_diagnostics
+from ibis import mcmc_diagnostics
 
 
 def time_it(func):

@@ -1,8 +1,8 @@
-# Setup script for sampling-methods repo
+# Setup script for IBIS repo
 from setuptools import setup, find_packages
 from subprocess import Popen, PIPE
 
-version = "1.0"
+version = "1.0.0"
 sha = None
 git_describe_process = Popen(
     ("git",
@@ -26,30 +26,26 @@ except Exception:
     pass
 
 # Provide better description
-description="LLNL's UQ Methods"
+description="IBIS"
 if sha is not None:
     description += " (sha: {})".format(sha)
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-setup(name="uq-methods",
+setup(name="ibis",
       version=version,
-     #version="0.0.1.dev1",
       description=description,
-      url="https://github.com/LLNL/uq-methods",
-     #url="https://lc.llnl.gov/bitbucket/projects/UQP/repos/uqp/",
+      url="https://github.com/LLNL/IBIS",
       author="Sarah El-Jurf",
       author_email="eljurf1@llnl.gov",
-     #author="LLNL UQP Team",
-     #author_email="uqpipeline-devs@llnl.gov",
       long_description=long_description,
       long_description_content_type="text/markdown",
       license="BSD 3-Clause",
       packages=find_packages(),
       zip_safe=False,
       install_requires=[
-            "numpy>=1.15,<1.19",
+            "numpy",#>=1.15,<1.19",
             "scikit-learn",
             "scipy",
             "matplotlib",

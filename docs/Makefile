@@ -43,8 +43,8 @@ clean:
 
 html:
 	mkdir -p source/_static
-	# python -m "nbconvert" --to html ./notebooks/*.ipynb
-	# mv ./notebooks/*.html source/_static/
+	python -m "nbconvert" --to html ./notebooks/*.ipynb
+	mv ./notebooks/*.html source/_static/
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."

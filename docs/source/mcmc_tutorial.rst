@@ -1,5 +1,5 @@
-MCMC
-========
+MCMC Tutorial
+=============
 
 The MCMC component allows a user to analyse the results coupled experiments and simulations.
 A user should already have observed values from an experiment with error bounds and surrogate models mapping
@@ -506,10 +506,3 @@ Example of Good Convergence
 
 .. figure:: _static/converged.png
    :alt: Converged
-
-
-MCMC API
----------------
-
-.. automodule:: uq_methods.mcmc
-   :members: MCMC, DefaultMCMC, DiscrepancyMCMC
