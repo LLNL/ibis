@@ -9,7 +9,7 @@ import numpy as np
 from sklearn.gaussian_process import GaussianProcessRegressor
 
 import themis
-from sampling import composite_samples, sampler
+from trata import composite_samples, sampler
 from ibis import mcmc, plots
 
 MODEL_TYPE = 'gpr'

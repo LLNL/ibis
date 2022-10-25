@@ -1,12 +1,12 @@
-{% set name = "uq-methods" %}
-{% set version = "1.0" %}
+{% set name = "ibis" %}
+{% set version = "1.0.0" %}
 
 package:
     name: {{ name }}
     version: {{ version }}
 
 source:
-    url: https://github.com/LLNL/uq-methods/archive/v{{ version }}.tar.gz
+    url: https://github.com/LLNL/IBIS/archive/v{{ version }}.tar.gz
     sha256: 
 
 build:
@@ -14,7 +14,7 @@ build:
   noarch: python
   script: {{ PYTHON }} -m pip install . -vv
   entry_points:
-    - uq-methods = uq_methods:init
+    - ibis = ibis:init
 
 requirements:
   host:
@@ -28,8 +28,7 @@ requirements:
 
 test:
   imports:
-    - sampling-methods
-    - sensitivity-methods
+    - trata
     - themis
   commands:
     - pip check
@@ -37,7 +36,7 @@ test:
     - pip
 
 about:
-    home:  https://github.com/LLNL/uq-methods
+    home:  https://github.com/LLNL/IBIS
     summary: 
     license: BSD 3-Clause
     license_file: LICENSE

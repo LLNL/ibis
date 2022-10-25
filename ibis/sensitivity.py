@@ -13,7 +13,7 @@ from sklearn.feature_selection import mutual_info_regression, f_regression
 from sklearn.linear_model import lars_path
 from sklearn.preprocessing import PolynomialFeatures
 
-from sampling.sampler import LatinHyperCubeSampler
+from trata.sampler import LatinHyperCubeSampler
 from ibis.pce_model import PolynomialChaosExpansionModel
 
 
