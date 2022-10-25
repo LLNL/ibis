@@ -10,9 +10,9 @@ import numpy as np
 import scipy.stats as sts
 from sklearn.gaussian_process import GaussianProcessRegressor
 
-from uq_methods import mcmc
-from uq_methods import filter
-from uq_methods import likelihoods
+from ibis import mcmc
+from ibis import filter
+from ibis import likelihoods
 
 
 X = np.array([[0.46123442, 0.91202244, 0.92876321], [0.06385122, 0.08942266, 0.44186744],
@@ -77,8 +77,8 @@ def tearDown():
     if os.path.isfile('test_model'):
         os.remove('test_model')
 
-@pytest.mark.skipif(sys.version_info[0] < 3, reason="Not supported for Python 2")
-@pytest.mark.xfail
+# @pytest.mark.skipif(sys.version_info[0] < 3, reason="Not supported for Python 2")
+# @pytest.mark.xfail
 
 def test_default_mcmc():
     mcmc = mcmc.DefaultMCMC()
@@ -126,8 +126,8 @@ def test_default_mcmc():
     assert prior_diag_expected==prior_diag_actual
     assert post_diag_expected==post_diag_actual
 
-@pytest.mark.skipif(sys.version_info[0] < 3, reason="Not supported for Python 2")
-@pytest.mark.xfail
+# @pytest.mark.skipif(sys.version_info[0] < 3, reason="Not supported for Python 2")
+# @pytest.mark.xfail
 
 def test_discrepancy_mcmc():
     mcmc = mcmc.DiscrepancyMCMC()
