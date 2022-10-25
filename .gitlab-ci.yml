@@ -16,7 +16,7 @@ stages:
   - if: $CI_PIPELINE_SOURCE == "merge_request_event"
   script:
   - pip install pytest
-  - if [[ $HOSTNAME =~ "borax" ]]; then python -m pytest --junitxml="borax_results.xml";
+  - if [[ $HOSTNAME =~ "borax" ]]; then python3 -m pytest --junitxml="borax_results.xml";
     elif [[ $HOSTNAME =~ "quartz" ]]; then python3 -m pytest --junitxml="quartz_results.xml";
     fi || true
   artifacts:
