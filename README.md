@@ -61,7 +61,7 @@ conda install -n ibis -c conda-forge sphinx sphinx_rtd_theme sphinx-autoapi nbsp
 
 ```bash
 export IBIS_PATH = ibis                               # `ibis` can be any name/directory you want
-pip install virtualenv                                            # just in case
+pip install virtualenv                                # just in case
 python3 -m virtualenv $IBIS_PATH   
 source ${IBIS_PATH}/bin/activate
 pip install "numpy>=1.15,<1.19" scikit-learn scipy matplotlib networkx six pip sphinx sphinx_rtd_theme ipython jupyterlab

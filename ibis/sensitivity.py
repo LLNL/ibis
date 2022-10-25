@@ -436,7 +436,7 @@ def one_at_a_time_effects(feature_data, response_data):
     """
         Calculates the elementary effects for a one-at-a-time study.
 
-        The `feature_data` points should have been generated from sampling_methods.sampler.OneAtATimeSampler
+        The `feature_data` points should have been generated from trata.sampler.OneAtATimeSampler
         with `do_oat=True` or similar.
         Two elementary effects are calculated per feature resulting in 2*p total effects
 
@@ -464,7 +464,7 @@ def morris_effects(feature_data, response_data):
     """
         Calculates the elementary effects for a Morris one-at-a-time study.
 
-        The `feature_data` points should have been generated from sampling_methods.sampler.MorrisOneAtATimeSampler
+        The `feature_data` points should have been generated from trata.sampler.MorrisOneAtATimeSampler
         or similar.
         The number of elementary effects calculated depends on the number of paths in the study.
         Each path produces one elementary effect per dimension.
