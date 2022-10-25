@@ -1,39 +1,51 @@
+# You can override the included template(s) by including variable overrides
+# SAST customization: https://docs.gitlab.com/ee/user/application_security/sast/#customizing-the-sast-settings
+# Secret Detection customization: https://docs.gitlab.com/ee/user/application_security/secret_detection/#customizing-settings
+# Dependency Scanning customization: https://docs.gitlab.com/ee/user/application_security/dependency_scanning/#customizing-the-dependency-scanning-settings
+# Container Scanning customization: https://docs.gitlab.com/ee/user/application_security/container_scanning/#customizing-the-container-scanning-settings
+# Note that environment variables can be set in several places
+# See https://docs.gitlab.com/ee/ci/variables/#cicd-variable-precedence
 before_script:
-  - env
-
-stages: 
-  - test
-
-.run_test:
+- env
+stages:
+- test
+".run_test":
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
-    - if: '$CI_COMMIT_BRANCH == "branch"'
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-  script: 
-    - pip install pytest
-    - if [[ $HOSTNAME =~ "borax" ]]; then python -m pytest --junitxml="borax_results.xml"; elif [[ $HOSTNAME =~ "quartz" ]]; then python3 -m pytest --junitxml="quartz_results.xml"; fi || true
+  - if: $CI_COMMIT_BRANCH == "main"
+  - if: $CI_COMMIT_BRANCH == "branch"
+  - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+  script:
+  - pip install pytest
+  - if [[ $HOSTNAME =~ "borax" ]]; then python -m pytest --junitxml="borax_results.xml";
+    elif [[ $HOSTNAME =~ "quartz" ]]; then python3 -m pytest --junitxml="quartz_results.xml";
+    fi || true
   artifacts:
     reports:
       junit: "*_results.xml"
-
-.on_borax:
+".on_borax":
   tags:
-    - borax
-    - shell
-
-.on_quartz:
+  - borax
+  - shell
+".on_quartz":
   tags:
-    - quartz
-    - shell
-
+  - quartz
+  - shell
 test_borax:
   image: python:3.6
   stage: test
-  coverage: /(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/
-  extends: [  .run_test , .on_borax  ]
-
+  coverage: "/(?i)total.*? (100(?:\\.0+)?\\%|[1-9]?\\d(?:\\.\\d+)?\\%)$/"
+  extends:
+  - ".run_test"
+  - ".on_borax"
 test_quartz:
   image: python:3.6
   stage: test
-  coverage: /(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/
-  extends: [  .run_test , .on_quartz  ]
+  coverage: "/(?i)total.*? (100(?:\\.0+)?\\%|[1-9]?\\d(?:\\.\\d+)?\\%)$/"
+  extends:
+  - ".run_test"
+  - ".on_quartz"
+sast:
+  stage: test
+include:
+- template: Security/SAST.gitlab-ci.yml
+- template: Security/Dependency-Scanning.gitlab-ci.yml

@@ -7,7 +7,7 @@ import pickle
 import matplotlib.pyplot as plt
 
 import hill_data
-from uq_methods import mcmc
+from ibis import mcmc
 
 mcmc_ana = mcmc.DefaultMCMC()
 
