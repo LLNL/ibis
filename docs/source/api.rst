@@ -13,13 +13,13 @@ Likelihoods
 .. automodule:: ibis.likelihoods
    :members:
 
-Monte Carlo Markov Chain
+Markov Chain Monte Carlo
 ------------------------
 
 .. automodule:: ibis.mcmc
    :members:
 
-Monte Carlo Markov Chain Diagnostics
+Markov Chain Monte Carlo Diagnostics
 ------------------------------------
 
 .. automodule:: ibis.mcmc_diagnostics
