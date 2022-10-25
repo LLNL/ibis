@@ -9,8 +9,8 @@ import numpy as np
 from sklearn.gaussian_process import GaussianProcessRegressor
 
 import themis
-from sampling_methods import composite_samples, sampler
-from uq_methods import mcmc, plots
+from sampling import composite_samples, sampler
+from ibis import mcmc, plots
 
 MODEL_TYPE = 'gpr'
 N = 150

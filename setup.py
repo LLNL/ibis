@@ -52,7 +52,7 @@ setup(name="ibis",
       ],
       classifiers=[
             "Programming Language :: Python :: 3",
-            "Programming Language :: Python :: 2.7",
+            #"Programming Language :: Python :: 2.7",
             "Operating System :: OS Independent",
       ],
       python_requires=">=3.6, >=2.7.16, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*",

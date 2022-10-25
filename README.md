@@ -1,20 +1,15 @@
 # IBIS
 
-LLNL's Interactive Bayesian Inference and Sensitivity, or IBIS, is designed to be used after a number of simulations have run to completion and is used to predict the results of future simulation runs.
+LLNL's Interactive Bayesian Inference and Sensitivity, or IBIS, is designed to be used after a number of simulations have run to completion, to predict the results of future simulation runs.
 
 Assessment of system performance variation induced by uncertain parameter values is referred to as uncertainty quantification (UQ). Typically, the Monte Carlo method is used to perform UQ by assigning probability distributions to uncertain input variables from which to draw samples in order to calculate corresponding output values using surrogate models. Based on the ensemble of output results, the output distribution should statistically describe the output's uncertainty.
 
 Sensitivity analysis refers to the study of how uncertainty in the output of a mathematical model or system can be attributed to different sources of uncertainty in the inputs. In the data science space, sensitivity analysis is often called feature selection. 
 
-In general, we have some function $f$ that we want to model.
-This is usually some sort of computer simulation where we vary a set of parameters $X$ to produce a set of outputs $Y=f(X)$.
-We then ask the questions,
-- "How does $Y$ change as $X$ changes?"  
-- "Which parts of $X$ is $Y$ sensitive to?"
+In general, we have some function $`f`$ that we want to model. This is usually some sort of computer simulation where we vary a set of parameters $`X`$ to produce a set of outputs $`Y=f(X)`$.
+We then ask the questions, "How does $`Y`$ change as $`X`$ changes?" and "Which parts of $`X`$ is $`Y`$ sensitive to?", this is often done so that we can choose to ignore the parameters of $`X`$ which don't affect $`Y`$ in subsequent analyses.
 
-this is often done so that we can choose to ignore the parameters of $X$ which don't affect $Y$ in subsequent analyses.
-
-The **ibis** package contains 7 modules:
+The IBIS package contains 7 modules:
    - filter
    - likelihoods
    - mcmc
