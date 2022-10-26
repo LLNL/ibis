@@ -2,7 +2,7 @@
 from setuptools import setup, find_packages
 from subprocess import Popen, PIPE
 
-version = "1.0.0"
+version = ''
 sha = None
 git_describe_process = Popen(
     ("git",
@@ -15,6 +15,8 @@ try:
     version = out.decode("utf-8")
     sp = version.split("-")
     version = sp[0]
+    if version == '':
+        version = '1.0.0'
     # Clean tag?
     if len(sp) != 0:
         commits = sp[1]

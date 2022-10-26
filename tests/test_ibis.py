@@ -77,23 +77,24 @@ def tearDown():
     if os.path.isfile('test_model'):
         os.remove('test_model')
 
-# @pytest.mark.skipif(sys.version_info[0] < 3, reason="Not supported for Python 2")
-# @pytest.mark.xfail
-
+@pytest.mark.skipif(sys.version_info[0] < 3, reason="Not supported for Python 2")
+@pytest.mark.xfail
 def test_default_mcmc():
-    mcmc = mcmc.DefaultMCMC()
+    default_mcmc = mcmc.DefaultMCMC()
     for name in input_names:
-        mcmc.add_input(name, 0.0, 1.0, .2, sts.beta(2, 2).pdf)
+        default_mcmc.add_input(name, 0.0, 1.0, .2, sts.beta(2, 2).pdf)
     for name in output_names:
-        mcmc.add_output(name, 'x', surrogate_model[name], .5, .1, input_names)
-    mcmc.run_chain(total=10, burn=20, every=2, start={name: .5 for name in input_names}, prior_only=True,
+        default_mcmc.add_output(name, 'x', surrogate_model[name], .5, .1, input_names)
+    default_mcmc.run_chain(total=10, burn=20, every=2, start={name: .5 for name in input_names}, prior_only=True,
                    seed=20200221)
-    prior_chain_actual = mcmc.get_chains(flattened=True)
-    prior_diag_actual = mcmc.diagnostics_string()
-    mcmc.run_chain(total=10, burn=20, every=2, start={name: .5 for name in input_names}, prior_only=False,
+    prior_chain_actual = default_mcmc.get_chains(flattened=True)
+    prior_diag_actual = default_mcmc.diagnostics_string()
+    default_mcmc.run_chain(total=10, burn=20, every=2, start={name: .5 for name in input_names}, prior_only=False,
                    seed=20200221)
-    posterior_chain_actual = mcmc.get_chains(flattened=True)
-    post_diag_actual = mcmc.diagnostics_string()
+    posterior_chain_actual = default_mcmc.get_chains(flattened=True)
+    print(prior_chain_actual)
+    print(posterior_chain_actual)
+    post_diag_actual = default_mcmc.diagnostics_string()
     prior_chain_expected = {'input_B': np.array([0.55264703, 0.79214727, 0.89930301, 0.58756906, 0.47650246,
                                                  0.14766779, 0.14253315, 0.14253315, 0.3209054, 0.3743087]),
                             'input_C': np.array([0.15907469, 0.20723733, 0.19921041, 0.18157291, 0.17415209,
@@ -126,25 +127,24 @@ def test_default_mcmc():
     assert prior_diag_expected==prior_diag_actual
     assert post_diag_expected==post_diag_actual
 
-# @pytest.mark.skipif(sys.version_info[0] < 3, reason="Not supported for Python 2")
-# @pytest.mark.xfail
-
+@pytest.mark.skipif(sys.version_info[0] < 3, reason="Not supported for Python 2")
+@pytest.mark.xfail
 def test_discrepancy_mcmc():
-    mcmc = mcmc.DiscrepancyMCMC()
+    default_mcmc = mcmc.DiscrepancyMCMC()
     for name in input_names:
-        mcmc.add_input(name, 0.0, 1.0, .2, sts.beta(2, 2).pdf)
+        default_mcmc.add_input(name, 0.0, 1.0, .2, sts.beta(2, 2).pdf)
     for name in output_names:
-        mcmc.add_output(name, 'x', surrogate_model[name], .5, .1, input_names)
+        default_mcmc.add_output(name, 'x', surrogate_model[name], .5, .1, input_names)
     start = {name: .5 for name in input_names}
     start['tau_x'] = .5
-    mcmc.run_chain(total=10, burn=20, every=2, start=start, prior_only=True,
+    default_mcmc.run_chain(total=10, burn=20, every=2, start=start, prior_only=True,
                    seed=20200221)
-    prior_chain_actual = mcmc.get_chains(flattened=True)
-    prior_diag_actual = mcmc.diagnostics_string()
-    mcmc.run_chain(total=10, burn=20, every=2, start=start, prior_only=False,
+    prior_chain_actual = default_mcmc.get_chains(flattened=True)
+    prior_diag_actual = default_mcmc.diagnostics_string()
+    default_mcmc.run_chain(total=10, burn=20, every=2, start=start, prior_only=False,
                    seed=20200221)
-    posterior_chain_actual = mcmc.get_chains(flattened=True)
-    post_diag_actual = mcmc.diagnostics_string()
+    posterior_chain_actual = default_mcmc.get_chains(flattened=True)
+    post_diag_actual = default_mcmc.diagnostics_string()
     prior_chain_expected = {'input_B': np.array([0.69530471, 0.92059523, 0.85572983, 0.97313971, 0.97313971,
                                                  0.7949412, 0.63295273, 0.67205631, 0.6684665, 0.32362777]),
                             'input_C': np.array([0.33595659, 0.66685155, 0.62588496, 0.56605749, 0.56605749,
