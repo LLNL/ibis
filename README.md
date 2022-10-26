@@ -27,7 +27,7 @@ export IBIS_PATH = ibis                                  # `ibis` can be any nam
 pip install virtualenv                                   # just in case
 python3 -m virtualenv $IBIS_PATH   
 source ${IBIS_PATH}/bin/activate
-pip install "numpy>=1.15,<1.19" scikit-learn scipy matplotlib networkx
+pip install numpy scikit-learn scipy matplotlib networkx
 git clone https://github.com/LLNL/IBIS
 cd ibis
 pip install .
@@ -36,7 +36,7 @@ pip install .
 ### via conda:
 
 ```bash
-conda create -n ibis -c conda-forge "python>=3.6" "numpy>=1.15,<1.19" scikit-learn scipy matplotlib networkx
+conda create -n ibis -c conda-forge "python>=3.6" numpy scikit-learn scipy matplotlib networkx
 conda activate uq-ibis
 git clone https://github.com/LLNL/IBIS
 cd ibis
@@ -64,7 +64,7 @@ export IBIS_PATH = ibis                               # `ibis` can be any name/d
 pip install virtualenv                                # just in case
 python3 -m virtualenv $IBIS_PATH   
 source ${IBIS_PATH}/bin/activate
-pip install "numpy>=1.15,<1.19" scikit-learn scipy matplotlib networkx six pip sphinx sphinx_rtd_theme ipython jupyterlab
+pip install numpy scikit-learn scipy matplotlib networkx six pip sphinx sphinx_rtd_theme ipython jupyterlab pytest
 git clone https://github.com/LLNL/IBIS
 cd ibis
 pip install .
@@ -72,7 +72,7 @@ pip install .
 ### via conda:
 
 ```bash
-conda create -n ibis -c conda-forge "python>=3.6" "numpy>=1.15,<1.19" scikit-learn scipy matplotlib six pip networkx sphinx sphinx_rtd_theme sphinx-autoapi nbsphinx jupyterlab ipython ipywidgets nb_conda nb_conda_kernels 
+conda create -n ibis -c conda-forge "python>=3.6" numpy scikit-learn scipy matplotlib six pip networkx sphinx sphinx_rtd_theme sphinx-autoapi nbsphinx jupyterlab ipython ipywidgets nb_conda nb_conda_kernels pytest
 conda activate ibis
 git clone https://github.com/LLNL/IBIS
 cd ibis
