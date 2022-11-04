@@ -37,7 +37,7 @@ pip install .
 
 ```bash
 conda create -n ibis -c conda-forge "python>=3.6" numpy scikit-learn scipy matplotlib networkx
-conda activate uq-ibis
+conda activate ibis
 git clone https://github.com/LLNL/IBIS
 cd ibis
 pip install .
