@@ -1,3 +1,4 @@
+<img align="left" width="75" height="75" src="./logo.png"> <br> 
 # IBIS
 
 LLNL's Interactive Bayesian Inference and Sensitivity, or IBIS, is designed to be used after a number of simulations have run to completion, to predict the results of future simulation runs.
