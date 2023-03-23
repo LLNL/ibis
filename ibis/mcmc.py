@@ -21,7 +21,7 @@ import numpy as np
 import scipy.stats as sts
 
 from ibis import mcmc_diagnostics
-
+import warnings
 
 def time_it(func):
     def timed(*args, **kwargs):
@@ -335,22 +335,23 @@ class MCMC(object):
 
             :rtype: str
         """
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", category=RuntimeWarning)
+            diags = self.get_diagnostics(n_split=n_split, scaled=scaled)
 
-        diags = self.get_diagnostics(n_split=n_split, scaled=scaled)
+            strs = ['acceptance_rate:{}'.format(int(diags['acceptance_rate']*10**13)/10**13)]
+            for key, value in diags.items():
+                if key != 'acceptance_rate':
+                    strs.append('{}:'.format(key))
+                    for k, v in value.items():
+                        if k != 'autocorrelation':
+                            strs.append('  {}:{}'.format(k, int(v*10**13)/10**13))
+                        elif autocorr:
+                            strs.append('  {}:'.format(k))
+                            for k1, v1 in v.items():
+                                strs.append('    {}:{}'.format(k1, int(v1*10**13)/10**13))
 
-        strs = ['acceptance_rate:{}'.format(diags['acceptance_rate'])]
-        for key, value in diags.items():
-            if key is not 'acceptance_rate':
-                strs.append('{}:'.format(key))
-                for k, v in value.items():
-                    if k is not 'autocorrelation':
-                        strs.append('  {}:{}'.format(k, v))
-                    elif autocorr:
-                        strs.append('  {}:'.format(k))
-                        for k1, v1 in v.items():
-                            strs.append('    {}:{}'.format(k1, v1))
-
-        return '\n'.join(strs)
+            return '\n'.join(strs)
 
     def get_residuals(self, scaled=True):
         """

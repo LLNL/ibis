@@ -21,6 +21,9 @@ def likelihood_plot(ax, prior_points, post_weights=None, post_points=None, exp_v
         :parameter post_weights: The posterior weights of the points
         :type post_weights: numpy array
 
+        :parameter post_points: The posterior set of points
+        :type post_points: numpy array
+
         :parameter exp_value: Experimental value
         :type exp_value: float
 
@@ -459,18 +462,18 @@ def box_plot(ax, prior_preds, exp_obs, exp_std, posterior_wts=None, posterior_pr
     pos = list(range(1, len(ls_dists) + 1))
 
     if model_prior_mean > 1.0:
-        ax.annotate("$\mu$={:.2f}\n$\sigma$={:.2f}".format(model_prior_mean, model_prior_std),
+        ax.annotate("$\\mu$={:.2f}\n$\\sigma$={:.2f}".format(model_prior_mean, model_prior_std),
                     (.05, .8), xycoords='axes fraction')
-        ax.annotate("$\mu$={:.2f}\n$\sigma$={:.2f}".format(model_post_mean, model_post_std),
+        ax.annotate("$\\mu$={:.2f}\n$\\sigma$={:.2f}".format(model_post_mean, model_post_std),
                     (.35, .8), xycoords='axes fraction')
-        ax.annotate("$\mu$={:.2f}\n$\sigma$={:.2f}".format(pred_post_mean, pred_post_std),
+        ax.annotate("$\\mu$={:.2f}\n$\\sigma$={:.2f}".format(pred_post_mean, pred_post_std),
                     (.65, .8), xycoords='axes fraction')
     else:
-        ax.annotate("$\mu$={:.4f}\n$\sigma$={:.4f}".format(model_prior_mean, model_prior_std),
+        ax.annotate("$\\mu$={:.4f}\n$\\sigma$={:.4f}".format(model_prior_mean, model_prior_std),
                     (.05, .8), xycoords='axes fraction')
-        ax.annotate("$\mu$={:.4f}\n$\sigma$={:.4f}".format(model_post_mean, model_post_std),
+        ax.annotate("$\\mu$={:.4f}\n$\\sigma$={:.4f}".format(model_post_mean, model_post_std),
                     (.35, .8), xycoords='axes fraction')
-        ax.annotate("$\mu$={:.4f}\n$\sigma$={:.4f}".format(pred_post_mean, pred_post_std),
+        ax.annotate("$\\mu$={:.4f}\n$\\sigma$={:.4f}".format(pred_post_mean, pred_post_std),
                     (.65, .8), xycoords='axes fraction')
 
     ax.boxplot(ls_dists, sym='', whis=1.5, patch_artist=True, positions=pos, medianprops={'color': 'k'})
