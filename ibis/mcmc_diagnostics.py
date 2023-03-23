@@ -23,9 +23,7 @@ def within_variance(chains):
 
 def between_variance(chains):
     # variance of means
-    m, n = get_chains_size(chains)
-
-    return np.var([np.mean(chain) for chain in chains], ddof=1) * n
+    return np.var([np.mean(chain) for chain in chains], ddof=1) * get_chains_size(chains)[1]
 
 
 def var_hat(chains):
@@ -39,8 +37,7 @@ def r_hat(chains):
 
 
 def variogram(chains, t):
-    total_mean = np.mean([np.mean(np.power(chain[:-t] - chain[t:], 2)) for chain in chains])
-    return total_mean
+    return np.mean([np.mean(np.power(chain[:-t] - chain[t:], 2)) for chain in chains])
 
 
 def rho_hat(chains, t, prev_var_hat=None):
@@ -58,7 +55,7 @@ def n_eff(chains):
 
     it1 = (rho_hat(chains, t, prev_var_hat) for t in count(1))
     for x in it1:
-        val = x + next(it1)
+        val = float(x + next(it1))
         if val >= 0:
             s += val
         else:
@@ -80,5 +77,3 @@ def mode(chains, bins=100):
     height, bins = np.histogram(chains, bins=bins)
     max_bin = np.argmax(height)
     return np.mean([bins[max_bin], bins[max_bin+1]])
-
-

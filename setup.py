@@ -38,7 +38,7 @@ with open("README.md", "r") as fh:
 setup(name="ibis",
       version=version,
       description=description,
-      url="https://github.com/LLNL/IBIS",
+      url="https://lc.llnl.gov/gitlab/weave/ibis",
       author="Sarah El-Jurf",
       author_email="eljurf1@llnl.gov",
       long_description=long_description,
@@ -47,17 +47,16 @@ setup(name="ibis",
       packages=find_packages(),
       zip_safe=False,
       install_requires=[
-            "numpy",#>=1.15,<1.19",
+            "numpy",
             "scikit-learn",
             "scipy",
             "matplotlib",
+            "networkx",
+            # "trata",
       ],
       classifiers=[
             "Programming Language :: Python :: 3",
-            #"Programming Language :: Python :: 2.7",
             "Operating System :: OS Independent",
       ],
       python_requires=">=3.6, >=2.7.16, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*",
       )
-# Only when logo is made
-# Popen(("scripts/render_logos.py",)).communicate()

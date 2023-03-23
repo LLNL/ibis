@@ -1,51 +1,89 @@
-# You can override the included template(s) by including variable overrides
-# SAST customization: https://docs.gitlab.com/ee/user/application_security/sast/#customizing-the-sast-settings
-# Secret Detection customization: https://docs.gitlab.com/ee/user/application_security/secret_detection/#customizing-settings
-# Dependency Scanning customization: https://docs.gitlab.com/ee/user/application_security/dependency_scanning/#customizing-the-dependency-scanning-settings
-# Container Scanning customization: https://docs.gitlab.com/ee/user/application_security/container_scanning/#customizing-the-container-scanning-settings
-# Note that environment variables can be set in several places
-# See https://docs.gitlab.com/ee/ci/variables/#cicd-variable-precedence
-before_script:
-- env
 stages:
-- test
-".run_test":
-  rules:
-  - if: $CI_COMMIT_BRANCH == "main"
-  - if: $CI_COMMIT_BRANCH == "branch"
-  - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+  - create_env
+  - run_tests
+    
+.create_env:
   script:
-  - pip install pytest
-  - if [[ $HOSTNAME =~ "borax" ]]; then python3 -m pytest --junitxml="borax_results.xml";
-    elif [[ $HOSTNAME =~ "quartz" ]]; then python3 -m pytest --junitxml="quartz_results.xml";
-    fi || true
-  artifacts:
-    reports:
-      junit: "*_results.xml"
-".on_borax":
+    - make create_env
+
+.run_tests:
+  script:
+    - make run_tests
+
+.on_cz:
   tags:
-  - borax
-  - shell
-".on_quartz":
+    - shell
+    - ruby
+    
+.on_rz:
   tags:
-  - quartz
-  - shell
-test_borax:
-  image: python:3.6
-  stage: test
-  coverage: "/(?i)total.*? (100(?:\\.0+)?\\%|[1-9]?\\d(?:\\.\\d+)?\\%)$/"
-  extends:
-  - ".run_test"
-  - ".on_borax"
-test_quartz:
-  image: python:3.6
-  stage: test
-  coverage: "/(?i)total.*? (100(?:\\.0+)?\\%|[1-9]?\\d(?:\\.\\d+)?\\%)$/"
-  extends:
-  - ".run_test"
-  - ".on_quartz"
-sast:
-  stage: test
-include:
-- template: Security/SAST.gitlab-ci.yml
-- template: Security/Dependency-Scanning.gitlab-ci.yml
+    - shell
+    - rztopaz
+
+.on_scf:
+  tags:
+    - shell
+    - magma
+    
+.run_on_cz:
+  rules:
+    - if: '$SOURCE_ZONE == "CZ" && $CI_PIPELINE_SOURCE != "merge_request_event" && $CI_COMMIT_TAG == null'
+
+.run_on_rz:
+  rules:
+    - if: '$SOURCE_ZONE == "RZ" && $CI_PIPELINE_SOURCE != "merge_request_event" && $CI_COMMIT_TAG == null'
+
+.run_on_scf:
+  rules:
+    - if: '$SOURCE_ZONE == "SCF" && $CI_PIPELINE_SOURCE != "merge_request_event" && $CI_COMMIT_TAG == null'
+    
+    
+.tag_on_cz:
+  rules:
+    - if: '$SOURCE_ZONE == "CZ" && $CI_COMMIT_TAG =~ "/^ibis-[0-9]+.[0-9]+.[0-9]+$/"'
+
+.tag_on_rz:
+  rules:
+    - if: '$SOURCE_ZONE == "RZ" && $CI_COMMIT_TAG =~ "/^ibis-[0-9]+.[0-9]+.[0-9]+$/"'
+    
+.tag_on_scf:
+  rules:
+    - if: '$SOURCE_ZONE == "SCF" && $CI_COMMIT_TAG =~ "/^ibis-[0-9]+.[0-9]+.[0-9]+$/"'    
+
+
+#
+# CZ
+#
+    
+create_env_on_cz:
+  stage: create_env
+  extends: [ .on_cz, .run_on_cz, .create_env ]
+  
+run_tests_on_cz:
+  stage: run_tests
+  extends: [ .on_cz, .run_on_cz, .run_tests ]
+
+
+#
+# RZ
+#
+
+create_env_on_rz:
+  stage: create_env
+  extends: [ .on_rz, .run_on_rz, .create_env ]
+  
+run_tests_on_rz:
+  stage: run_tests
+  extends: [ .on_rz, .run_on_rz, .run_tests ]
+
+#
+# SCF
+#
+
+create_env_on_scf:
+  stage: create_env
+  extends: [ .on_scf, .run_on_scf, .create_env ]
+  
+run_tests_on_scf:
+  stage: run_tests
+  extends: [ .on_scf, .run_on_scf, .run_tests ]
