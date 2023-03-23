@@ -29,7 +29,7 @@ pip install virtualenv                                   # just in case
 python3 -m virtualenv $IBIS_PATH   
 source ${IBIS_PATH}/bin/activate
 pip install numpy scikit-learn scipy matplotlib networkx
-git clone https://github.com/LLNL/IBIS
+git clone https://lc.llnl.gov/gitlab/weave/ibis
 cd ibis
 pip install .
 ```
@@ -39,7 +39,7 @@ pip install .
 ```bash
 conda create -n ibis -c conda-forge "python>=3.6" numpy scikit-learn scipy matplotlib networkx
 conda activate ibis
-git clone https://github.com/LLNL/IBIS
+git clone https://lc.llnl.gov/gitlab/weave/ibis
 cd ibis
 pip install .
 ```
@@ -66,7 +66,7 @@ pip install virtualenv                                # just in case
 python3 -m virtualenv $IBIS_PATH   
 source ${IBIS_PATH}/bin/activate
 pip install numpy scikit-learn scipy matplotlib networkx six pip sphinx sphinx_rtd_theme ipython jupyterlab pytest
-git clone https://github.com/LLNL/IBIS
+git clone https://lc.llnl.gov/gitlab/weave/ibis
 cd ibis
 pip install .
 ```
@@ -75,7 +75,7 @@ pip install .
 ```bash
 conda create -n ibis -c conda-forge "python>=3.6" numpy scikit-learn scipy matplotlib six pip networkx sphinx sphinx_rtd_theme sphinx-autoapi nbsphinx jupyterlab ipython ipywidgets nb_conda nb_conda_kernels pytest
 conda activate ibis
-git clone https://github.com/LLNL/IBIS
+git clone https://lc.llnl.gov/gitlab/weave/ibis
 cd ibis
 pip install .
 ```
@@ -85,3 +85,22 @@ pip install .
 ```bash
 python -m ipykernel install --user --name ibis --display-name "IBIS Environment"
 ```
+Standard Setup
+==============
+
+Standard installation, provided by the Makefile, is initiated by entering
+the following at the command line::
+
+    $ make
+
+This command creates the virtual environment, installs \(missing\) dependencies,
+and installs IBIS.
+
+You can build the documentation from `docs`, which will appear in `build/docs`, using::
+
+    $ make html
+
+Test are run by entering::
+
+    $ make run_tests
+
