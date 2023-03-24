@@ -4,7 +4,6 @@ USER_WORKSPACE := $(if $(USER_WORKSPACE),$(USER_WORKSPACE),/usr/workspace/$(USER
 WORKSPACE = $(USER_WORKSPACE)/gitlab/weave/ibis
 IBIS_ENV := $(if $(IBIS_ENV),$(IBIS_ENV),ibis_env)
 
-
 PYTHON_CMD = /usr/tce/packages/python/python-3.8.2/bin/python3
 
 PIP_OPTIONS = --trusted-host wci-repo.llnl.gov --index-url https://wci-repo.llnl.gov/repository/pypi-group/simple --use-pep517
@@ -27,7 +26,7 @@ else
 endif
 TRATA_REPO = $(GITLAB_URL)/weave/trata
 
-BUILDS_DIR := $(if $(CI_BUILDS_DIR),$(CI_BUILDS_DIR)/gitlab/weave/weave_ci,$(shell pwd))
+BUILDS_DIR := $(if $(CI_BUILDS_DIR),$(CI_BUILDS_DIR)/gitlab/weave/ibis,$(shell pwd))
 
 define create_env
 	# call from the directory where env will be created
