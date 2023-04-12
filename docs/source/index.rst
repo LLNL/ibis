@@ -29,13 +29,15 @@ The ``ibis`` package works with Python 3 and is made up of 7 modules:
  * ``pce_model``
  * ``plots``
 
-On LC RZ and CZ systems as an example, they are available at ``/collab/usr/gapps/uq/ibis``.
-On LANL's Trinitite, they are available at ``/usr/projects/packages/ibis/``. Demo usage (on LC):
+On LC RZ and CZ systems,  ``ibis`` is available in the weave-develop environment. You can activate the weave-develop environment by running:
+
+::
+
+         source /usr/apps/weave/weave-develop/bin/activate
+
+Demo usage :
 
 .. code:: python
-
-        import sys
-        sys.path.append("/collab/usr/gapps/uq/ibis")
 
         from ibis import mcmc, pce_model
 
