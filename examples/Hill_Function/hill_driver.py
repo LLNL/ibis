@@ -122,7 +122,7 @@ for name in ['a', 'b', 'c']:
     fig.savefig('{}_prior_trace_plot.png'.format(name))
     plt.close(fig)
 
-    ig, ax = plt.subplots(1, 1)
+    fig, ax = plt.subplots(1, 1)
     mcmc_ana.autocorr_plot(name, ax=ax)
 
     fig.savefig('{}_prior_autocorr_plot.png'.format(name))
