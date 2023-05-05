@@ -29,11 +29,11 @@ The ``ibis`` package works with Python 3 and is made up of 7 modules:
  * ``pce_model``
  * ``plots``
 
-On LC RZ and CZ systems,  ``ibis`` is available in the weave-develop environment. You can activate the weave-develop environment by running:
+Installation:
 
 ::
 
-         source /usr/apps/weave/weave-develop/bin/activate
+        pip install llnl-ibis
 
 Demo usage :
 
