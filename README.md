@@ -19,88 +19,34 @@ The IBIS package contains 7 modules:
    - pce_model
    - plots
 
-## Basic Installation
+## Getting Started
 
-### via pip:
+To get the latest public version:
 
 ```bash
-export IBIS_PATH = ibis                                  # `ibis` can be any name/directory you want
-pip install virtualenv                                   # just in case
-python3 -m virtualenv $IBIS_PATH   
-source ${IBIS_PATH}/bin/activate
-pip install numpy scikit-learn scipy matplotlib networkx
-git clone https://lc.llnl.gov/gitlab/weave/ibis
-cd ibis
+pip install ibis
+```
+
+To get the latest stable from a cloned repo, simply run:
+
+```bash
 pip install .
 ```
 
-### via conda:
+Alternatively, add the path to this repo to your PYTHONPATH environment variable or in your code with:
 
 ```bash
-conda create -n ibis -c conda-forge "python>=3.6" numpy scikit-learn scipy matplotlib networkx
-conda activate ibis
-git clone https://lc.llnl.gov/gitlab/weave/ibis
-cd ibis
-pip install .
+import sys
+sys.path.append(path_to_ibis_repo)
 ```
-## Build Docs
+## Contact Info
 
-### via pip:
+IBIS maintainer can be reached at: eljurf1@llnl.gov
+
+## Contributing
+
+Contributions should be submitted as a pull request pointing to the develop branch, and must pass IBIS's CI process; to run the same checks locally, use:
 
 ```bash
-pip install sphinx sphinx_rtd_theme
+pytest tests/test_*.py
 ```
-### via conda:
-
-```bash
-conda install -n ibis -c conda-forge sphinx sphinx_rtd_theme sphinx-autoapi nbsphinx
-```
-
-## Beefy Installation
-
-### via pip:
-
-```bash
-export IBIS_PATH = ibis                               # `ibis` can be any name/directory you want
-pip install virtualenv                                # just in case
-python3 -m virtualenv $IBIS_PATH   
-source ${IBIS_PATH}/bin/activate
-pip install numpy scikit-learn scipy matplotlib networkx six pip sphinx sphinx_rtd_theme ipython jupyterlab pytest
-git clone https://lc.llnl.gov/gitlab/weave/ibis
-cd ibis
-pip install .
-```
-### via conda:
-
-```bash
-conda create -n ibis -c conda-forge "python>=3.6" numpy scikit-learn scipy matplotlib six pip networkx sphinx sphinx_rtd_theme sphinx-autoapi nbsphinx jupyterlab ipython ipywidgets nb_conda nb_conda_kernels pytest
-conda activate ibis
-git clone https://lc.llnl.gov/gitlab/weave/ibis
-cd ibis
-pip install .
-```
-
-### Register your Python env via Jupyter:
-
-```bash
-python -m ipykernel install --user --name ibis --display-name "IBIS Environment"
-```
-Standard Setup
-==============
-
-Standard installation, provided by the Makefile, is initiated by entering
-the following at the command line::
-
-    $ make
-
-This command creates the virtual environment, installs \(missing\) dependencies,
-and installs IBIS.
-
-You can build the documentation from `docs`, which will appear in `build/docs`, using::
-
-    $ make html
-
-Test are run by entering::
-
-    $ make run_tests
-
