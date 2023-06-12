@@ -24,7 +24,7 @@ The IBIS package contains 7 modules:
 To get the latest public version:
 
 ```bash
-pip install ibis
+pip install llnl-ibis
 ```
 
 To get the latest stable from a cloned repo, simply run:
@@ -39,14 +39,41 @@ Alternatively, add the path to this repo to your PYTHONPATH environment variable
 import sys
 sys.path.append(path_to_ibis_repo)
 ```
+## Documentation
+The documentation can be built from the `docs` directory using:
+
+```bash
+make html
+```
+
+Read the Docs coming soon.
+
 ## Contact Info
 
 IBIS maintainer can be reached at: eljurf1@llnl.gov
 
 ## Contributing
 
-Contributions should be submitted as a pull request pointing to the develop branch, and must pass IBIS's CI process; to run the same checks locally, use:
+Contributing to IBIS is relatively easy. Just send us a pull request. When you send your request, make develop the destination branch on the IBIS repository.
+
+Your PR must pass IBIS's unit tests and documentation tests, and must be PEP 8 compliant. We enforce these guidelines with our CI process. To run these tests locally, and for helpful tips on git, see our [Contribution Guide](.github/workflows/CONTRIBUTING.md).
+
+IBIS's `develop` branch has the latest contributions. Pull requests should target `develop`, and users who want the latest package versions, features, etc. can use `develop`.
+
+
+Contributions should be submitted as a pull request pointing to the `develop` branch, and must pass IBIS's CI process; to run the same checks locally, use:
 
 ```bash
 pytest tests/test_*.py
 ```
+
+## Releases
+See our [change log](CHANGELOG.md) for more details.
+
+## Code of Conduct
+Please note that IBIS has a [Code of Conduct](.github/workflows/CODE_OF_CONDUCT.md). By participating in the IBIS community, you agree to abide by its rules.
+
+## License
+IBIS is distributed under the terms of the MIT license. All new contributions must be made under the MIT license. See LICENSE and NOTICE for details.
+
+LLNL-CODE-838977

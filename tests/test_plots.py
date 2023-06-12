@@ -136,20 +136,20 @@ def test_likelihood_plot():
     posterior = sts.beta(13, 7).rvs(10000)
     fig, ax = plt.subplots(1, 1)
     plots.likelihood_plot(ax, prior_points=prior, post_points=posterior, bins=50, conf_level=95)
-    plt.savefig(PRODUCED_DIR + os.sep + 'likelihood_plot_01.png')
+    plt.savefig(os.path.join(PRODUCED_DIR, 'likelihood_plot_01.png'))
     plt.close()
     points = np.linspace(0, 1, 10000)
     weights = sts.beta(13, 7).pdf(points)
     fig, ax = plt.subplots(1, 1)
     plots.likelihood_plot(ax, prior_points=points, post_weights=weights, exp_value=13. / (13. + 7.), bins=50,
                         conf_level=95, density=False)
-    plt.savefig(PRODUCED_DIR + os.sep + 'likelihood_plot_02.png')
+    plt.savefig(os.path.join(PRODUCED_DIR , 'likelihood_plot_02.png'))
     plt.close()
-    assert matplotlib.testing.compare.compare_images(FIDUCIAL_DIR + os.sep + 'likelihood_plot_01.png',
-                                                PRODUCED_DIR + os.sep + 'likelihood_plot_01.png',
+    assert matplotlib.testing.compare.compare_images(os.path.join(FIDUCIAL_DIR, 'likelihood_plot_01.png'),
+                                                os.path.join(PRODUCED_DIR, 'likelihood_plot_01.png'),
                                                 tol=tol) == None
-    assert matplotlib.testing.compare.compare_images(FIDUCIAL_DIR + os.sep + 'likelihood_plot_02.png',
-                                                PRODUCED_DIR + os.sep + 'likelihood_plot_02.png',
+    assert matplotlib.testing.compare.compare_images(os.path.join(FIDUCIAL_DIR, 'likelihood_plot_02.png'),
+                                                os.path.join(PRODUCED_DIR, 'likelihood_plot_02.png'),
                                                 tol=tol) == None
 
 def test_box_plot():
@@ -158,20 +158,20 @@ def test_box_plot():
     fig, ax = plt.subplots(1, 1)
     fig.set_size_inches(10, 10)
     plots.box_plot(ax, prior_preds=prior, posterior_preds=posterior, num_bins=50, exp_obs=13. / (13. + 7.), exp_std=.1)
-    plt.savefig(PRODUCED_DIR + os.sep + 'box_plot_01.png')
+    plt.savefig(os.path.join(PRODUCED_DIR, 'box_plot_01.png'))
     plt.close()
     points = np.linspace(0, 1, 10000)
     weights = sts.beta(13, 7).pdf(points)
     fig, ax = plt.subplots(1, 1)
     fig.set_size_inches(10, 10)
     plots.box_plot(ax, prior_preds=points, posterior_wts=weights, num_bins=50, exp_obs=13. / (13. + 7.), exp_std=.1)
-    plt.savefig(PRODUCED_DIR + os.sep + 'box_plot_02.png')
+    plt.savefig(os.path.join(PRODUCED_DIR, 'box_plot_02.png'))
     plt.close()
-    assert matplotlib.testing.compare.compare_images(FIDUCIAL_DIR + os.sep + 'box_plot_01.png',
-                                                PRODUCED_DIR + os.sep + 'box_plot_01.png',
+    assert matplotlib.testing.compare.compare_images(os.path.join(FIDUCIAL_DIR, 'box_plot_01.png'),
+                                                os.path.join(PRODUCED_DIR, 'box_plot_01.png'),
                                                 tol=tol) == None
-    assert matplotlib.testing.compare.compare_images(FIDUCIAL_DIR + os.sep + 'box_plot_02.png',
-                                                PRODUCED_DIR + os.sep + 'box_plot_02.png',
+    assert matplotlib.testing.compare.compare_images(os.path.join(FIDUCIAL_DIR, 'box_plot_02.png'),
+                                                os.path.join(PRODUCED_DIR, 'box_plot_02.png'),
                                                 tol=tol) == None
 
 def test_contour_plot():
@@ -179,20 +179,20 @@ def test_contour_plot():
     y_dist = sts.beta(13, 7).rvs(10000)
     fig, ax = plt.subplots(1, 1)
     plots.contour_plot(ax, x_dist, y_dist, bins=15)
-    plt.savefig(PRODUCED_DIR + os.sep + 'contour_plot_01.png')
+    plt.savefig(os.path.join(PRODUCED_DIR, 'contour_plot_01.png'))
     plt.close()
     x_weighted = sts.uniform(0, 1).rvs(10000)
     y_weighted = sts.uniform(0, 1).rvs(10000)
     weights = sts.beta(3, 4).pdf(x_weighted) * sts.beta(13, 7).pdf(y_weighted)
     fig, ax = plt.subplots(1, 1)
     plots.contour_plot(ax, x_weighted, y_weighted, bins=15, weights=weights)
-    plt.savefig(PRODUCED_DIR + os.sep + 'contour_plot_02.png')
+    plt.savefig(os.path.join(PRODUCED_DIR, 'contour_plot_02.png'))
     plt.close()
-    assert matplotlib.testing.compare.compare_images(FIDUCIAL_DIR + os.sep + 'contour_plot_01.png',
-                                                PRODUCED_DIR + os.sep + 'contour_plot_01.png',
+    assert matplotlib.testing.compare.compare_images(os.path.join(FIDUCIAL_DIR, 'contour_plot_01.png'),
+                                                os.path.join(PRODUCED_DIR, 'contour_plot_01.png'),
                                                 tol=tol) == None
-    assert matplotlib.testing.compare.compare_images(FIDUCIAL_DIR + os.sep + 'contour_plot_02.png',
-                                                PRODUCED_DIR + os.sep + 'contour_plot_02.png',
+    assert matplotlib.testing.compare.compare_images(os.path.join(FIDUCIAL_DIR, 'contour_plot_02.png'),
+                                                os.path.join(PRODUCED_DIR, 'contour_plot_02.png'),
                                                 tol=tol) == None
 
 def test_scatter_plot():
@@ -200,20 +200,20 @@ def test_scatter_plot():
     y_dist = sts.beta(13, 7).rvs(10000)
     fig, ax = plt.subplots(1, 1)
     plots.scatter_plot(ax, x_dist, y_dist, num_points=500)
-    plt.savefig(PRODUCED_DIR + os.sep + 'scatter_plot_01.png')
+    plt.savefig(os.path.join(PRODUCED_DIR, 'scatter_plot_01.png'))
     plt.close()
     x_weighted = sts.uniform(0, 1).rvs(10000)
     y_weighted = sts.uniform(0, 1).rvs(10000)
     weights = sts.beta(3, 4).pdf(x_weighted) * sts.beta(13, 7).pdf(y_weighted)
     fig, ax = plt.subplots(1, 1)
     plots.scatter_plot(ax, x_weighted, y_weighted, num_points=500, weights=weights)
-    plt.savefig(PRODUCED_DIR + os.sep + 'scatter_plot_02.png')
+    plt.savefig(os.path.join(PRODUCED_DIR, 'scatter_plot_02.png'))
     plt.close()
-    assert matplotlib.testing.compare.compare_images(FIDUCIAL_DIR + os.sep + 'scatter_plot_01.png',
-                                                PRODUCED_DIR + os.sep + 'scatter_plot_01.png',
+    assert matplotlib.testing.compare.compare_images(os.path.join(FIDUCIAL_DIR, 'scatter_plot_01.png'),
+                                                os.path.join(PRODUCED_DIR, 'scatter_plot_01.png'),
                                                 tol=tol) == None
-    assert matplotlib.testing.compare.compare_images(FIDUCIAL_DIR + os.sep + 'scatter_plot_02.png',
-                                                PRODUCED_DIR + os.sep + 'scatter_plot_02.png',
+    assert matplotlib.testing.compare.compare_images(os.path.join(FIDUCIAL_DIR, 'scatter_plot_02.png'),
+                                                os.path.join(PRODUCED_DIR, 'scatter_plot_02.png'),
                                                 tol=tol) == None
 
 def test_sensitivity_plot():
@@ -222,10 +222,10 @@ def test_sensitivity_plot():
     sensitivity.sensitivity_plot(ax, surrogate_model, feature_names=input_names,
                                 feature_ranges=ranges, response_names=output_names,
                                 num_plot_points=100, num_seed_points=5)
-    plt.savefig(PRODUCED_DIR + os.sep + 'sensitivity_plot_01.png', )
+    plt.savefig(os.path.join(PRODUCED_DIR, 'sensitivity_plot_01.png'))
     plt.close()
-    assert matplotlib.testing.compare.compare_images(FIDUCIAL_DIR + os.sep + 'sensitivity_plot_01.png',
-                                                PRODUCED_DIR + os.sep + 'sensitivity_plot_01.png',
+    assert matplotlib.testing.compare.compare_images(os.path.join(FIDUCIAL_DIR, 'sensitivity_plot_01.png'),
+                                                os.path.join(PRODUCED_DIR, 'sensitivity_plot_01.png'),
                                                 tol=tol) == None
 
 def test_variance_network_plot():
@@ -234,10 +234,10 @@ def test_variance_network_plot():
     sensitivity.pce_network_plot(ax[np.newaxis, :], feature_data=X, response_data=Y,
                                 feature_names=input_names, response_names=output_names,
                                 feature_ranges=ranges)
-    plt.savefig(PRODUCED_DIR + os.sep + 'variance_network_plot_01.png')
+    plt.savefig(os.path.join(PRODUCED_DIR, 'variance_network_plot_01.png'))
     plt.close()
-    assert matplotlib.testing.compare.compare_images(FIDUCIAL_DIR + os.sep + 'variance_network_plot_01.png',
-                                                PRODUCED_DIR + os.sep + 'variance_network_plot_01.png',
+    assert matplotlib.testing.compare.compare_images(os.path.join(FIDUCIAL_DIR, 'variance_network_plot_01.png'),
+                                                os.path.join(PRODUCED_DIR, 'variance_network_plot_01.png'),
                                                 tol=tol) == None
 
 @pytest.mark.skipif(sys.version_info[0] < 3, reason="Not supported for Python 2")
@@ -245,8 +245,8 @@ def test_rank_order_plot():
     fig, ax = plt.subplots(1, 1)
     sensitivity.mutual_info_rank_plot(ax, feature_data=X, response_data=Y,
                                     feature_names=input_names, response_names=output_names)
-    plt.savefig(PRODUCED_DIR + os.sep + 'rank_order_plot_01.png')
+    plt.savefig(os.path.join(PRODUCED_DIR, 'rank_order_plot_01.png'))
     plt.close()
-    assert matplotlib.testing.compare.compare_images(FIDUCIAL_DIR + os.sep + 'rank_order_plot_01.png',
-                                                PRODUCED_DIR + os.sep + 'rank_order_plot_01.png',
+    assert matplotlib.testing.compare.compare_images(os.path.join(FIDUCIAL_DIR, 'rank_order_plot_01.png'),
+                                                os.path.join(PRODUCED_DIR, 'rank_order_plot_01.png'),
                                                 tol=tol) == None
