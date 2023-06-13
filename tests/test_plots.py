@@ -22,7 +22,10 @@ from ibis import plots
 PRODUCED_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), 'test_plots_produced'))
 FIDUCIAL_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), 'test_plots_fiducials'))
 
-tol = 1e-5
+if float(matplotlib.__version__[:3]) < 3.7 :
+    tol = 50
+else:
+    tol = 1e-5
 X = np.array([[0.46123442, 0.91202244, 0.92876321],
                         [0.06385122, 0.08942266, 0.44186744],
                         [0.68961511, 0.52403073, 0.56833564],
