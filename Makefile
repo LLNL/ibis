@@ -58,7 +58,7 @@ endef
 .PHONY: create_env
 create_env:
 	@echo "Create venv for running ibis...$(WORKSPACE)";
-	@[ -d $(WORKSPACE) ] || mkdir -p $(WORKSPACE);
+	mkdir -p $(WORKSPACE);
 	cd $(WORKSPACE)
 	if [ -d $(IBIS_ENV) ]; then \
 		rm -rf $(IBIS_ENV); \
