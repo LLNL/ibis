@@ -1,6 +1,6 @@
-incude:
+include:
   - project: 'lc-templates/id_tokens'
-  file: 'id_tokens.yml'
+    file: 'id_tokens.yml'
 
 stages:
   - create_env
