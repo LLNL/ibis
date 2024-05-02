@@ -50,7 +50,7 @@ Read the Docs coming soon.
 
 ## Contact Info
 
-IBIS maintainer can be reached at: eljurf1@llnl.gov
+IBIS maintainer can be reached at: olson59@llnl.gov
 
 ## Contributing
 
