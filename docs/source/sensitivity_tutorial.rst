@@ -223,12 +223,12 @@ Shrinkage varies between 0, where :math:`\lambda\to\infty` and :math:`\hat{\beta
 .. math::
    f(x_1,x_2)=2x_1-3x_2^2
 
-.. figure:: _static/poly_lasso.png
+.. figure:: ../_static/poly_lasso.png
 
 .. math::
    f(x,a,b,c)=\frac{ax^c}{x^c+b^c}
 
-.. figure:: _static/hill_lasso.png
+.. figure:: ../_static/hill_lasso.png
 
 Polynomial Chaos Expansion (PCE)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

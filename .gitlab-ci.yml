@@ -1,7 +1,3 @@
-include:
-  - project: 'lc-templates/id_tokens'
-    file: 'id_tokens.yml'
-
 stages:
   - create_env
   - run_tests

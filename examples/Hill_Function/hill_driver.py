@@ -122,7 +122,7 @@ for name in ['a', 'b', 'c']:
     fig.savefig('{}_prior_trace_plot.png'.format(name))
     plt.close(fig)
 
-    fig, ax = plt.subplots(1, 1)
+    ig, ax = plt.subplots(1, 1)
     mcmc_ana.autocorr_plot(name, ax=ax)
 
     fig.savefig('{}_prior_autocorr_plot.png'.format(name))
@@ -153,3 +153,8 @@ for key in post_chains.keys():
 
     fig.savefig('{}_likelihood.png'.format(key))
     plt.close(fig)
+
+# fig, ax = plt.subplots(1, 1)
+# mcmc_ana.posterior_predictive_plot('Y_0', ax=ax)
+# fig.savefig('post_prediction.png')
+# plt.close(fig)
