@@ -4,16 +4,11 @@ USER_WORKSPACE := $(if $(USER_WORKSPACE),$(USER_WORKSPACE),/usr/workspace/$(USER
 WORKSPACE = $(USER_WORKSPACE)/gitlab/weave/ibis
 IBIS_ENV := $(if $(IBIS_ENV),$(IBIS_ENV),ibis_env)
 
-PYTHON_CMD = /usr/tce/packages/python/python-3.8.2/bin/python3
+PYTHON_CMD = /usr/tce/bin/python3
 
 PIP_OPTIONS = --trusted-host wci-repo.llnl.gov --index-url https://wci-repo.llnl.gov/repository/pypi-group/simple --use-pep517
 
 DOCS_PKGS = sphinx nbsphinx nbconvert sphinx-rtd-theme
-
-# TEMPORARY till we get trata to Pypi or wci-repo
-CZ_GITLAB = ssh://git@czgitlab.llnl.gov:7999
-RZ_GITLAB = ssh://git@rzgitlab.llnl.gov:7999
-SCF_GITLAB = ssh://git@scfgitlab.llnl.gov:7999
 
 # SOURCE_ZONE is set in CI variable
 # Set SOURCE_ZONE to 'CZ', 'RZ' or 'SCF' on command line for manual testing
@@ -24,7 +19,6 @@ else ifeq ($(SOURCE_ZONE),RZ)
 else
     GITLAB_URL = $(CZ_GITLAB)
 endif
-TRATA_REPO = $(GITLAB_URL)/weave/trata
 
 BUILDS_DIR := $(if $(CI_BUILDS_DIR),$(CI_BUILDS_DIR)/gitlab/weave/ibis,$(shell pwd))
 
@@ -39,15 +33,6 @@ define create_env
 	pip install $(PIP_OPTIONS) --force pytest
 endef
 
-define install_trata
-	echo "...install Trata..."
-	cd $(WORKSPACE) && \
-	rm -rf trata && git clone $(TRATA_REPO) && \
-	cd trata  && \
-	source $1/bin/activate && \
-	pip install $(PIP_OPTIONS) . && \
-	pip list
-endef
 
 define install_ibis
 	cd $(BUILDS_DIR)
@@ -79,10 +64,6 @@ create_env:
 		rm -rf $(IBIS_ENV); \
 	fi
 	$(call create_env,$(WORKSPACE)/$(IBIS_ENV))
-	if [ -d trata ]; then \
-	  rm -rf trata; \
-	fi;
-	$(call install_trata,$(WORKSPACE)/$(IBIS_ENV))
 	$(call install_ibis,$(WORKSPACE)/$(IBIS_ENV))
 
 .PHONY: run_tests

@@ -483,9 +483,11 @@ def morris_effects(feature_data, response_data):
     def make_effect(feature_partition, response_partition):
         diff_response = response_partition[1:] - response_partition[:-1]
         diff_features = feature_partition[1:] - feature_partition[:-1]
-        which_var = diff_features != 0
+        which_var = np.where(diff_features != 0)
         val = diff_response / diff_features[which_var]
-        return np.dot(val, which_var.astype('int'))
+        # Re-order val
+        val[which_var[1]] = val[range(k)]
+        return val
 
     return np.array([make_effect(_x, _y) for _x, _y in zip(feature_data.reshape(r, k + 1, k),
                                                            response_data.reshape(r, k + 1))])
