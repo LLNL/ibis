@@ -293,7 +293,7 @@ def contour_plot(ax, x, y, bins=10, weights=None, fig=None):
     #           linestyles=c_styles)
 
 
-def scatter_plot(ax, x, y, num_points=None, weights=None):
+def scatter_plot(ax, x, y, num_points=None, weights=None, seed=None):
     """
         Shows the scatter plot of a 2-D set of points, optionally culled by posterior probabilities
 
@@ -312,14 +312,18 @@ def scatter_plot(ax, x, y, num_points=None, weights=None):
         :parameter weights: The posterior weights of the points
         :type weights: numpy array
     """
+    rng = np.random.default_rng(seed=seed)
+
     if num_points is None:
         ax.plot(x, y, 'o')
+        return x, y
     else:
         if weights is not None:
-            idx = np.random.choice(range(len(x)), num_points, p=weights/weights.sum())
+            idx = rng.choice(range(len(x)), num_points, p=weights/weights.sum())
         else:
-            idx = np.random.choice(range(len(x)), num_points)
+            idx = rng.choice(range(len(x)), num_points)
         ax.plot(x[idx], y[idx], '.')
+        return x[idx], y[idx]
 
 
 def box_plot(ax, prior_preds, exp_obs, exp_std, posterior_wts=None, posterior_preds=None, add_uncert=None, num_pts=100,
