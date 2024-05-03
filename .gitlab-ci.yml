@@ -22,7 +22,7 @@ stages:
 .on_rz:
   tags:
     - shell
-    - rztopaz
+    - rzhound
 
 .on_scf:
   tags:
