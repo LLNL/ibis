@@ -12,10 +12,12 @@ warnings.filterwarnings("ignore", category=RuntimeWarning)
 import numpy as np
 import scipy.stats as sts
 from sklearn.gaussian_process import GaussianProcessRegressor
-
+from SALib.sample import sobol
+from SALib.test_functions import Ishigami
 from ibis import mcmc
 from ibis import filter
 from ibis import likelihoods
+from ibis import sensitivity
 
 
 class TestUQMethods(unittest.TestCase):
@@ -484,6 +486,44 @@ class TestUQMethods(unittest.TestCase):
             0.81637602, 0.23754028, 0.86240461, 0.03413243, 0.0728169, 0.02593211, 0.35998965, 0.53026133, 0.07201057,
             0., 0.2386372, 0.0596916, 0.33313067, 0.16821533, 0.26039306, 0.])
         np.testing.assert_array_almost_equal(combined_weights_expected, combined_weights_actual)
+
+    def test_sobol_indices():
+
+        problem = {
+            'num_vars': 3,
+            'names': ['x1', 'x2', 'x3'],
+            'bounds': [[-3.14159265359, 3.14159265359],
+                    [-3.14159265359, 3.14159265359],
+                    [-3.14159265359, 3.14159265359]]
+        }
+
+        # Generate samples
+        param_values = sobol.sample(problem, 1024, seed = 20200221)
+
+        # Run model (example)
+        Y = Ishigami.evaluate(param_values)
+
+        # Perform analysis
+        Si = sensitivity.sobol_indices(problem, Y, print_to_console=True, seed = 20200221)
+
+        nan = np.nan
+
+        Si_fiducial = { 'S1': np.array([0.31351062, 0.44364417, 0.00135091]), 
+                        'S1_conf': np.array([0.06519416, 0.05125487, 0.05215017]), 
+                        'ST': np.array([0.55122586, 0.44247489, 0.24207729]), 
+                        'ST_conf': np.array([0.08564482, 0.04030709, 0.02605812]), 
+                        'S2': np.array([[            nan, -1.81077177e-04,  2.43615473e-01],
+                                        [            nan,             nan, -1.20057123e-03],
+                                        [            nan,             nan,             nan]]), 
+                        'S2_conf': np.array([[       nan, 0.08668659, 0.09818693],
+                                        [       nan,        nan, 0.07086115],
+                                        [       nan,        nan,        nan]])
+                        }
+
+        
+        for key in Si_fiducial:
+            np.testing.assert_allclose(Si[key], Si_fiducial[key], rtol = 1e-6)
+
 
 if __name__ == '__main__':
     unittest.main()
