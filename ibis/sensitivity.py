@@ -12,56 +12,9 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from sklearn.feature_selection import mutual_info_regression, f_regression
 from sklearn.linear_model import lars_path
 from sklearn.preprocessing import PolynomialFeatures
-from SALib.analyze import sobol
 
 from trata.sampler import LatinHyperCubeSampler
 from ibis.pce_model import PolynomialChaosExpansionModel
-
-
-def sobol_indices(problem, Y, **kwargs):
-    """
-    Perform Sobol Analysis on model outputs.
-
-    Returns a dictionary with keys `S1`, `S1_conf`, `ST`, and `ST_conf`,
-    where each entry is a list of size D (the number of parameters) containing
-    the indices in the same order as the parameter file. If calc_second_order is True,
-    the dictionary also contains keys `S2` and `S2_conf`.
-
-    Args:
-        - problem (dict,): The problem definition.
-        - Y (numpy.array): A NumPy array containing the model outputs
-        - calc_second_order (bool): Calculate second-order sensitivities (default True)
-        - num_resamples (int): The number of resamples (default 100)
-        - conf_level (float): The confidence interval level (default 0.95)
-        - print_to_console (bool): Print results directly to console (default False)
-        - parallel (bool): Perform analysis in parallel if True
-        - n_processors (int): Number of parallel processes (only used if parallel is True)
-        - keep_resamples (bool): Whether or not to store intermediate resampling results (default False)
-        - seed (int): Seed to generate a random number
-
-    """
-
-    calc_second_order = kwargs.get('calc_second_order', True)
-    num_resamples = kwargs.get('num_resamples', 100)
-    conf_level = kwargs.get('conf_level', 0.95)
-    print_to_console = kwargs.get('print_to_console', False)
-    parallel = kwargs.get('parallel', False)
-    n_processors = kwargs.get('n_processors', None)
-    keep_resamples = kwargs.get('keep_resamples', False)
-    seed = kwargs.get('seed', None)
-
-    Si = sobol.analyze(problem,
-                       Y,
-                       calc_second_order=calc_second_order,
-                       num_resamples=num_resamples,
-                       conf_level=conf_level,
-                       print_to_console=print_to_console,
-                       parallel=parallel,
-                       n_processors=n_processors,
-                       keep_resamples=keep_resamples,
-                       seed=seed)
-
-    return Si
 
 
 def _variance_network_plot(ax,
@@ -584,6 +537,62 @@ def morris_effects(feature_data, response_data):
 
     return np.array([make_effect(_x, _y) for _x, _y in zip(feature_data.reshape(r, k + 1, k),
                                                            response_data.reshape(r, k + 1))])
+
+
+def sobol_indices(feature_data, response_data, include_second_order=False, **kwargs):
+    """
+    Calculates Sobol indices
+
+    The 'feature_data' points should have been generated from
+    trata.sampler.SobolIndexSampler or similar.
+
+    Args:
+        - feature_data ([[float]]): Array-like of feature data
+          Each column is a feature; each row is an observation
+        - response_data ([[float]]): Array-like of response data 
+          Rows correspond to rows in feature data
+
+    Returns:
+        - First-order indices ([[float]]): (1 by k) Numpy array of first-order indices
+        - Total-order indices ([[float]]): (1 by k) Numpy array of total-order indices
+        - Second-order indices ([[float]]): (k by k) Numpy array of second-order indices
+          (upper triangular)
+
+    Raises:
+        - ValueError
+    """
+    r, k = feature_data.shape
+    if include_second_order and r % (2 * k + 2) == 0:
+        n = int(r / (2 * k + 2))
+    elif not include_second_order and r % (k + 2) == 0:
+        n = int(r / (k + 2))
+    else:
+        raise ValueError("feature_data is not in the right format")
+
+    y_A = response_data[:n]
+    y_B = response_data[n: 2 * n]
+
+    y_AB = np.zeros((n, k))
+    S_i = np.zeros(k)
+    S_Ti = np.zeros(k)
+    for i in range(k):
+        y_AB[:, i] = np.squeeze(response_data[(i + 2) * n: (i + 3) * n])
+        S_i[i] = np.nanmean(y_B * (y_AB[:, i] - y_A)) / np.nanvar(y_A)
+        S_Ti[i] = 0.5 * np.nanmean((y_A - y_AB[:, i]) ** 2) / np.nanvar(y_A)
+
+    if include_second_order:
+        y_BA = np.zeros((n, k))
+        S_ij = np.zeros((k, k))
+        for i in range(k):
+            y_BA[:, i] = response_data[(i + k + 2) * n: (i + k + 3) * n]
+            for j in range(i + 1, k):
+                S_ij[i, j] = np.nanmean(
+                    y_BA[:, i] * y_AB[:, j] - y_A * y_B, axis=0
+                ) / np.nanvar(y_A)
+                S_ij[i, j] = S_ij[i, j] - S_i[i] - S_i[j]
+        return S_i, S_Ti, S_ij
+    else:
+        return S_i, S_Ti
 
 
 def lasso_path_plot(ax, feature_data, response_data, feature_names, response_names,
