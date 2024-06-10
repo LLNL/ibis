@@ -487,7 +487,7 @@ class TestUQMethods(unittest.TestCase):
             0., 0.2386372, 0.0596916, 0.33313067, 0.16821533, 0.26039306, 0.])
         np.testing.assert_array_almost_equal(combined_weights_expected, combined_weights_actual)
 
-    def test_sobol_indices():
+    def test_sobol_indices(self):
 
         problem = {
             'num_vars': 3,
