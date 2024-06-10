@@ -1,7 +1,7 @@
 [tool]
 [tool.poetry]
 name = "llnl-ibis"
-version = "1.0.0"
+version = "1.1.0"
 description = "A tool to facilitate uncertainity quantification and sensitivity methods."
 license = "BSD 3-Clause License"
 classifiers = [
@@ -18,7 +18,7 @@ authors = [
     "Andrew Fillmore <fillmore1@llnl.gov>", "Andrew Fillmore",
 ]
 maintainers = [
-    "Sarah El-Jurf <eljurf1@llnl.gov>", "Sarah El-Jurf",
+    "Renee Olson <olson59@llnl.gov>", "Renee Olson",
 ]
 readme = "README.md"
 packages = [
@@ -33,6 +33,7 @@ scipy = "*"
 matplotlib = "*"
 networkx = "*"
 trata = "*"
+salib = "*"
 
 [tool.poetry.dev-dependencies]
 sphinx_rtd_theme = "*"
@@ -60,7 +61,7 @@ build-backend = "poetry.core.masonry.api"
 line-length = 79
 
 [tool.bumpver]
-current_version = "1.0.0"
+current_version = "1.1.0"
 version_pattern = "MAJOR.MINOR.PATCH"
 commit_message = "bump version {old_version} -> {new_version}"
 commit = true
