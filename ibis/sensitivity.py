@@ -549,7 +549,7 @@ def sobol_indices(feature_data, response_data, include_second_order=False, **kwa
     Args:
         - feature_data ([[float]]): Array-like of feature data
           Each column is a feature; each row is an observation
-        - response_data ([[float]]): Array-like of response data 
+        - response_data ([[float]]): Array-like of response data
           Rows correspond to rows in feature data. There should
           only be one column of outputs for each row of inputs.
 
@@ -574,12 +574,12 @@ def sobol_indices(feature_data, response_data, include_second_order=False, **kwa
     if response_col != 1:
         msg = f"Response data should have 1 column. Was given {response_col}."
         raise ValueError(msg)
-    if not isinstance(feature_data[0,0], float):
-        msg = f"feature_data is {type(feature_data[0,0])} type. "
+    if not isinstance(feature_data[0, 0], float):
+        msg = f"feature_data is {type(feature_data[0, 0])} type. "
         msg += "It should be float type"
         raise TypeError(msg)
-    if not isinstance(response_data[0,0], float):
-        msg = f"response_data is {type(response_data[0,0])} type. "
+    if not isinstance(response_data[0, 0], float):
+        msg = f"response_data is {type(response_data[0, 0])} type. "
         msg += "It should be float type"
         raise TypeError(msg)
 
