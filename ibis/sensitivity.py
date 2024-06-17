@@ -550,7 +550,8 @@ def sobol_indices(feature_data, response_data, include_second_order=False, **kwa
         - feature_data ([[float]]): Array-like of feature data
           Each column is a feature; each row is an observation
         - response_data ([[float]]): Array-like of response data 
-          Rows correspond to rows in feature data
+          Rows correspond to rows in feature data. There should
+          only be one column of outputs for each row of inputs.
 
     Returns:
         - First-order indices ([[float]]): (1 by k) Numpy array of first-order indices
@@ -559,9 +560,29 @@ def sobol_indices(feature_data, response_data, include_second_order=False, **kwa
           (upper triangular)
 
     Raises:
-        - ValueError
+        - ValueError, TypeError
     """
+
     r, k = feature_data.shape
+    response_row, response_col = response_data.shape
+
+    # Check data for correct shape and type
+    if response_row != r:
+        msg = "Feature data and response data should have the same number of rows. \n"
+        msg += f"Feature data has {r} and response data has {response_row}."
+        raise ValueError(msg)
+    if response_col != 1:
+        msg = f"Response data should have 1 column. Was given {response_col}."
+        raise ValueError(msg)
+    if not isinstance(feature_data[0,0], float):
+        msg = f"feature_data is {type(feature_data[0,0])} type. "
+        msg += "It should be float type"
+        raise TypeError(msg)
+    if not isinstance(response_data[0,0], float):
+        msg = f"response_data is {type(response_data[0,0])} type. "
+        msg += "It should be float type"
+        raise TypeError(msg)
+
     if include_second_order and r % (2 * k + 2) == 0:
         n = int(r / (2 * k + 2))
     elif not include_second_order and r % (k + 2) == 0:

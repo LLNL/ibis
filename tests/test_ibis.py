@@ -486,18 +486,53 @@ class TestUQMethods(unittest.TestCase):
             0., 0.2386372, 0.0596916, 0.33313067, 0.16821533, 0.26039306, 0.])
         np.testing.assert_array_almost_equal(combined_weights_expected, combined_weights_actual)
 
-    def test_sobol_indices(self):
+    def test_sobol_valid(self):
+        from trata.sampler import SobolIndexSampler
 
         ls_test_box = [[0.0, 25.0], [-25.0, 0.0], [-25.0, 25.0]]
 
-        X = trata.sampler.SobolIndexSampler.sample_points(num_points=1,
-                                                          box=ls_test_box,
-                                                          include_second_order=False,
-                                                          seed=3)
+        X = SobolIndexSampler.sample_points(num_points=1,
+                                            box=ls_test_box,
+                                            include_second_order=False,
+                                            seed=3)
 
+        Y = (X.sum(axis=1) ** 2).reshape(-1,1)
+
+        Si_actual, STi_actual = sensitivity.sobol_indices(X, Y)
+
+        Si_expected = array([48.01007599, -117.75566939, 668.20534162])
+        STi_expected = array([2.27227749, 1.36259649, 174.94334384])
+        np.testing.assert_array_almost_equal(Si_actual, Si_expected)
+        np.testing.assert_array_almost_equal(STi_actual, STi_expected)
+
+    def test_sobol_invalid(self):
+        from trata.sampler import SobolIndexSampler
+        X = np.array([1]).reshape(-1,1)
+        Y = np.array([5]).reshape(-1,1)
+
+        # Wrong format for feature_data
+        pytest.raises(ValueError, sensitivity.sobol_indices(X, Y))
+
+        Y = np.array([[4,6,3,7,4]]).reshape(-1,1)
+        # Response_data doesn't match feature_data rows
+        pytest.raises(ValueError, sensitivity.sobol_indices(X, Y))
+
+        # Feature_data is wrong type
+        X = np.array([[1,6,8,4,6]]).reshape(-1,1)
+        pytest.raises(TypeError, sensitivity.sobol_indices(X, Y))
+
+        # Response_data is wrong type
+        ls_test_box = [[0.0, 25.0], [-25.0, 0.0], [-25.0, 25.0]]
+        X = SobolIndexSampler.sample_points(num_points=1,
+                                            box=ls_test_box,
+                                            include_second_order=False,
+                                            seed=3)
+        Y = np.array([[4,6,3,7,4,7,4,7,4,8]]).reshape(-1,1)
+        pytest.raises(TypeError, sensitivity.sobol_indices(X, Y))
+
+        # Response data has more than one column
         Y = np.stack([X.sum(axis=1) ** 2, np.sin(X.sum(axis=1))]).T
-
-        output = sensitivity.sobol_indices(X, Y)
+        pytest.raises(ValueError, sensitivity.sobol_indices(X, Y))
 
 
 if __name__ == '__main__':
