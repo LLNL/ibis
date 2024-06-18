@@ -118,27 +118,27 @@ class TestUQMethods(unittest.TestCase):
                                                      0.68511602, 0.68511602, 0.51473225,
                                                      0.39249496])}
         prior_diag_expected = 'acceptance_rate:0.560975609756\n' \
-                            'input_A:\n' \
-                            '  r_hat:2.2617755855702\n' \
-                            '  n_eff:1.3386894239721\n' \
-                            '  var_hat:0.1126901165922\n' \
-                            '  mean:0.4436117031237\n' \
-                            '  std:0.2552577058995\n' \
-                            '  mode:0.1463169996242\n' \
-                            'input_B:\n' \
-                            '  r_hat:3.0080989395777\n' \
-                            '  n_eff:1.2969916848321\n' \
-                            '  var_hat:0.0767884318154\n' \
-                            '  mean:0.3713316843256\n' \
-                            '  std:0.2044228036195\n' \
-                            '  mode:0.564082263686\n' \
-                            'input_C:\n' \
-                            '  r_hat:1.3221135286268\n' \
-                            '  n_eff:2.7707369877955\n' \
-                            '  var_hat:0.0563963666147\n' \
-                            '  mean:0.5235087507818\n' \
-                            '  std:0.2027403441317\n' \
-                            '  mode:0.6817834793133'
+                              'input_A:\n' \
+                              '  r_hat:2.2617755855702\n' \
+                              '  n_eff:1.3386894239721\n' \
+                              '  var_hat:0.1126901165922\n' \
+                              '  mean:0.4436117031237\n' \
+                              '  std:0.2552577058995\n' \
+                              '  mode:0.1463169996242\n' \
+                              'input_B:\n' \
+                              '  r_hat:3.0080989395777\n' \
+                              '  n_eff:1.2969916848321\n' \
+                              '  var_hat:0.0767884318154\n' \
+                              '  mean:0.3713316843256\n' \
+                              '  std:0.2044228036195\n' \
+                              '  mode:0.564082263686\n' \
+                              'input_C:\n' \
+                              '  r_hat:1.3221135286268\n' \
+                              '  n_eff:2.7707369877955\n' \
+                              '  var_hat:0.0563963666147\n' \
+                              '  mean:0.5235087507818\n' \
+                              '  std:0.2027403441317\n' \
+                              '  mode:0.6817834793133'
 
         posterior_chain_expected = {'input_A': np.array([0.124974, 0.124974, 0.124974, 0.178624,
                                                          0.230599, 0.134530, 0.222407, 0.222407,
@@ -581,40 +581,57 @@ class TestUQMethods(unittest.TestCase):
              0.16821533, 0.26039306, 0.])
         np.testing.assert_array_almost_equal(combined_weights_expected, combined_weights_actual)
 
-    def test_sobol_valid(self):
-        from trata.sampler import SobolIndexSampler
 
+def test_sobol_valid():
+    from trata.sampler import SobolIndexSampler
+
+    ls_test_box = [[0.0, 25.0], [-25.0, 0.0], [-25.0, 25.0]]
+
+    X = SobolIndexSampler.sample_points(num_points=1,
+                                        box=ls_test_box,
+                                        include_second_order=False,
+                                        seed=3)
+
+    Y = (X.sum(axis=1) ** 2).reshape(-1, 1)
+
+    Si_actual, STi_actual = sensitivity.sobol_indices(X, Y)
+
+    Si_expected = ([48.01007599, -117.75566939, 668.20534162])
+    STi_expected = ([2.27227749, 1.36259649, 174.94334384])
+    np.testing.assert_array_almost_equal(Si_actual, Si_expected)
+    np.testing.assert_array_almost_equal(STi_actual, STi_expected)
+
+
+def test_sobol_value_error():
+    from trata.sampler import SobolIndexSampler
+    with pytest.raises(ValueError):
+        X = np.array([1.1]).reshape(-1, 1)
+        Y = np.array([5.5]).reshape(-1, 1)
+
+        # Wrong format for feature_data
+        sensitivity.sobol_indices(X, Y)
+
+        Y = np.array([[4, 6, 3, 7, 4]]).reshape(-1, 1)
+        # Response_data doesn't match feature_data rows
+        sensitivity.sobol_indices(X, Y)
+
+        # Response data has more than one column
         ls_test_box = [[0.0, 25.0], [-25.0, 0.0], [-25.0, 25.0]]
-
         X = SobolIndexSampler.sample_points(num_points=1,
                                             box=ls_test_box,
                                             include_second_order=False,
                                             seed=3)
+        Y = np.stack([X.sum(axis=1) ** 2, np.sin(X.sum(axis=1))]).T
+        sensitivity.sobol_indices(X, Y)
 
-        Y = (X.sum(axis=1) ** 2).reshape(-1, 1)
 
-        Si_actual, STi_actual = sensitivity.sobol_indices(X, Y)
-
-        Si_expected = ([48.01007599, -117.75566939, 668.20534162])
-        STi_expected = ([2.27227749, 1.36259649, 174.94334384])
-        np.testing.assert_array_almost_equal(Si_actual, Si_expected)
-        np.testing.assert_array_almost_equal(STi_actual, STi_expected)
-
-    def test_sobol_invalid(self):
-        from trata.sampler import SobolIndexSampler
-        X = np.array([1]).reshape(-1, 1)
-        Y = np.array([5]).reshape(-1, 1)
-
-        # Wrong format for feature_data
-        pytest.raises(ValueError, sensitivity.sobol_indices(X, Y))
-
-        Y = np.array([[4, 6, 3, 7, 4]]).reshape(-1, 1)
-        # Response_data doesn't match feature_data rows
-        pytest.raises(ValueError, sensitivity.sobol_indices(X, Y))
-
+def test_sobol_type_error():
+    from trata.sampler import SobolIndexSampler
+    with pytest.raises(TypeError):
         # Feature_data is wrong type
         X = np.array([[1, 6, 8, 4, 6]]).reshape(-1, 1)
-        pytest.raises(TypeError, sensitivity.sobol_indices(X, Y))
+        Y = np.array([[4, 6, 3, 7, 4]]).reshape(-1, 1)
+        sensitivity.sobol_indices(X, Y)
 
         # Response_data is wrong type
         ls_test_box = [[0.0, 25.0], [-25.0, 0.0], [-25.0, 25.0]]
@@ -623,11 +640,7 @@ class TestUQMethods(unittest.TestCase):
                                             include_second_order=False,
                                             seed=3)
         Y = np.array([[4, 6, 3, 7, 4, 7, 4, 7, 4, 8]]).reshape(-1, 1)
-        pytest.raises(TypeError, sensitivity.sobol_indices(X, Y))
-
-        # Response data has more than one column
-        Y = np.stack([X.sum(axis=1) ** 2, np.sin(X.sum(axis=1))]).T
-        pytest.raises(ValueError, sensitivity.sobol_indices(X, Y))
+        sensitivity.sobol_indices(X, Y)
 
 
 if __name__ == '__main__':
