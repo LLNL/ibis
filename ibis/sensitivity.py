@@ -466,6 +466,7 @@ def _pce_score(feature_data, response_data, ranges, powers, pce_degree=1, model_
         Raises:
             -
     """
+
     feature_data_to_fit = feature_data[:, powers.sum(axis=-1) == 1]
 
     model = PolynomialChaosExpansionModel(num_degrees=model_degrees, ranges=ranges)
@@ -651,7 +652,7 @@ def lasso_path_plot(ax, feature_data, response_data, feature_names, response_nam
                                                  response_column_data,
                                                  method=method)
 
-        shrinkage = coefficients.T.abs().sum(axis=1)
+        shrinkage = np.sum(np.abs(coefficients.T), axis=1)
         shrinkage /= shrinkage[-1]
 
         lines = [axes.plot(shrinkage, coefficient, color=np.random.rand(3))[0]
@@ -708,9 +709,9 @@ def sensitivity_plot(ax, surrogate_model, feature_names, response_names, feature
             response_prediction = surrogate_model.predict(new_feature_data)
 
             for response_index, response_name in enumerate(response_names):
-                ax[feature_index][response_index].set_xlabel(feature_name)
-                ax[feature_index][response_index].set_ylabel(response_name)
-                ax[feature_index][response_index].plot(dimension_sweep,
+                ax[feature_index, response_index].set_xlabel(feature_name)
+                ax[feature_index, response_index].set_ylabel(response_name)
+                ax[feature_index, response_index].plot(dimension_sweep,
                                                        response_prediction[:, response_index],
                                                        color=color,
                                                        alpha=.75)

@@ -1,20 +1,10 @@
-from __future__ import print_function
-from __future__ import division
-from __future__ import absolute_import
 import os
-import sys
-import unittest
-import pytest
-import warnings
 import numpy as np
 import kosh
 import h5py
-import scipy.stats as sts
-from sklearn.gaussian_process import GaussianProcessRegressor
-from ibis import mcmc
 from ibis import sensitivity
 from ibis import kosh_operators
-from trata import OneAtATimeSampler, MorrisOneAtATimeSampler
+from trata.sampler import OneAtATimeSampler, MorrisOneAtATimeSampler
 
 
 def test_kosh_oat_effects():
@@ -29,146 +19,48 @@ def test_kosh_oat_effects():
 	OAT_samples = OneAtATimeSampler.sample_points(box=ranges, default=default, do_oat=True, use_default=True)
 	OAT_response = hill(*OAT_samples.T)
 
-	fileName = "mytestfile.hdf5"
+	MOAT_samples = MorrisOneAtATimeSampler.sample_points(box=ranges, num_paths=10, seed=5)
+	MOAT_response = hill(*MOAT_samples.T)
+
+	fileName = "mytestfile2.hdf5"
 	with h5py.File(fileName, "w") as f:
 		f.create_dataset("inputs", data=OAT_samples)
 		f.create_dataset("outputs", data=OAT_response)
+		f.create_dataset("minputs", data=MOAT_samples)
+		f.create_dataset("moutputs", data=MOAT_response)
 		f.close()
 
-	store = kosh.connect("temp_testing.sql")
+	store = kosh.connect("sen_testing.sql")
 	dataset = store.create("uq_data")
 	dataset.associate([fileName], 'hdf5')
 
 	oat_effects_actual = kosh_operators.KoshOneAtATimeEffects(dataset['inputs'],
-								   		   	   				  input_names=['x','a','b','c'],
-								   		   	   				  outputs=dataset['outputs'],
-								   		   	   				  output_name=['response'],
-								   		   	   				  method='OAT')[:]
+															  input_names=['x','a','b','c'],
+															  outputs=dataset['outputs'],
+															  output_name=['response'],
+															  method='OAT')[:]
 	oat_effects_expected = np.array([[ 0.15151515,  0.03030303, -2.34848485, -0.37878788],
-       							 	 [ 1.19945096,  0.03030303, -0.13102335, -0.01010069]])
+									 [ 1.19945096,  0.03030303, -0.13102335, -0.01010069]])
 
-    np.testing.assert_array_almost_equal(oat_effects_actual[name],
-                                     	 oat_effects_expected[name])
+	np.testing.assert_array_almost_equal(oat_effects_actual,
+										 oat_effects_expected)
 
-    moat_effects_actual = kosh_operators.KoshOneAtATimeEffects(dataset['inputs'],
-    														   input_names=['x','a','b','c'],
-								   		   	   				   outputs=dataset['outputs'],
-								   		   	   				   output_name=['response'],
-								   		   	   				   method='MOAT')[:]
-    moat_effects_expected = np.array([[ 2.92272041e+00,  7.36863527e-01, -7.36586718e-01, -1.01377959e-05],
-       								  [ 2.30849124e+00,  7.20432683e-01, -6.02100069e-01, 6.79781008e-01],
-       								  [ 4.40279245e-01,  1.22311121e-12, -1.66556852e+00, -1.19409343e-01],
-       								  [ 2.62998595e+00,  1.17120779e-03, -5.93357821e-02, 8.84563122e-05],
-							          [ 1.27781293e-02,  9.99979636e-01, -6.31003148e-02, 1.38378038e-03],
-							          [ 1.37807640e+00,  3.24550037e-02, -5.01728364e-01, 3.76985410e-01],
-							          [ 4.34892068e-02,  8.84980968e-01, -1.01245616e+00, 3.20322500e-02],
-							          [ 2.06498306e+00,  4.37000912e-01, -2.13248203e+00, 7.72911783e-03],
-							          [ 1.53018278e-01,  3.22836599e-02, -2.69962287e-01, -4.80432643e-12],
-							          [ 1.44040399e+00,  9.96666152e-01, -1.35434979e-16, -7.72119504e-18]])
-    np.testing.assert_array_almost_equal(moat_effects_actual[name],
-                                     	 moat_effects_expected[name])
+	moat_effects_actual = kosh_operators.KoshOneAtATimeEffects(dataset['minputs'],
+															   input_names=['x','a','b','c'],
+															   outputs=dataset['moutputs'],
+															   output_name=['response'],
+															   method='MOAT')[:]
+	moat_effects_expected = np.array([[ 4.28648011e-02,  9.94204532e-01, -1.92855818e-01, 1.16923509e-03],
+									  [ 1.68458287e+00,  7.37470159e-05, -4.19587808e-04, -7.34217555e-04],
+									  [ 2.15187225e-01,  9.97918098e-01, -1.13172239e-02, 1.74146824e-03],
+									  [ 1.91515777e+00,  7.44472168e-13, -4.50885545e+00, -2.26070938e-09],
+									  [ 2.95917398e-01,  9.10053999e-01, -2.06379426e-01, 2.20833245e-01],
+									  [ 5.22615836e+00,  6.85728269e-01, -6.63134512e+00, 1.61993499e-01],
+									  [ 2.81754178e-02,  9.98701060e-01, -1.20299115e-01, 4.81984047e-02],
+									  [ 2.61959302e+00,  3.30006477e-09, -6.95868204e-08, -1.33960173e-04],
+									  [ 1.18856883e+00,  1.90671956e-05, -2.48016858e-04, -2.63403096e-04],
+									  [ 8.82161209e-01,  5.11439321e-13, -2.36099761e-12, -1.93124765e-13]])
 
-    def test_kosh_sensitivity_plots():
-
-    	# Hill function to get output data
-		def hill(x, a, b, c):
-			return a * (x ** c) / (x ** c + b ** c)
-
-		ranges = np.array([[0, 5], [2, 10], [1, 3], [1, 20]])
-		default = np.array([1, 5, 2, 5])
-
-		LHC_samples = LatinHyperCubeSampler.sample_points(box=ranges, num_points=50).astype('float')
-		LHC_response = hill(*LHC_samples.T)
-
-		surrogate_model = GaussianProcessRegressor().fit(LHC_samples, LHC_response)
-
-		fileName = "mytestfile.hdf5"
-		with h5py.File(fileName, "w") as f:
-			f.create_dataset("inputs", data=LHC_samples)
-			f.create_dataset("outputs", data=LHC_response)
-			f.close()
-
-		store = kosh.connect("temp_testing.sql")
-		dataset = store.create("uq_data")
-		dataset.associate([fileName], 'hdf5')
-
-
-		result1 = kosh_operators.KoshSensitivityPlots(dataset['inputs'],
-                                             method='lasso',
-                                             input_names=['x','a','b','c'],
-                                             outputs=dataset['outputs'],
-                                             output_names=['response'],
-                                             degree=1)[:]
-
-		result2 = kosh_operators.KoshSensitivityPlots(dataset['inputs'],
-		                                             method='sensitivity',
-		                                             surrogate_model=surrogate_model,
-		                                             input_names=['x','a','b','c'],
-		                                             outputs=dataset['outputs'],
-		                                             output_names=['response'],
-		                                             input_ranges=ranges,
-		                                             num_plot_points=10,
-		                                             num_seed_points=2)[:]
-
-		result3 = kosh_operators.KoshSensitivityPlots(dataset['inputs'],
-		                                             method='f_score',
-		                                             input_names=['x','a','b','c'],
-		                                             outputs=dataset['outputs'],
-		                                             output_names=['response'])[:]
-
-		result4 = kosh_operators.KoshSensitivityPlots(dataset['inputs'],
-		                                             method='mutual_info_score',
-		                                             input_names=['x','a','b','c'],
-		                                             outputs=dataset['outputs'],
-		                                             output_names=['response'],
-		                                             n_neighbors=3)[:]
-
-		result5 = kosh_operators.KoshSensitivityPlots(dataset['inputs'],
-		                                             method='pce_score',
-		                                             input_names=['x','a','b','c'],
-		                                             outputs=dataset['outputs'],
-		                                             output_names=['response'],
-		                                             input_ranges=ranges,
-		                                             degree=1,
-		                                             model_degrees=1)[:]
-
-		result6 = kosh_operators.KoshSensitivityPlots(dataset['inputs'],
-		                                             method='f_score_rank',
-		                                             input_names=['x','a','b','c'],
-		                                             outputs=dataset['outputs'],
-		                                             output_names=['response'],
-		                                             degree=1)[:]
-
-		result7 = kosh_operators.KoshSensitivityPlots(dataset['inputs'],
-		                                             method='mutual_info_rank',
-		                                             input_names=['x','a','b','c'],
-		                                             outputs=dataset['outputs'],
-		                                             output_names=['response'],
-		                                             n_neighbors=3)[:]
-
-		result8 = kosh_operators.KoshSensitivityPlots(dataset['inputs'],
-		                                             method='pce_rank',
-		                                             input_names=['x','a','b','c'],
-		                                             outputs=dataset['outputs'],
-		                                             output_names=['response'],
-		                                             degree=1,
-		                                             model_degrees=1)[:]
-
-		result9 = kosh_operators.KoshSensitivityPlots(dataset['inputs'],
-		                                             method='f_score_network',
-		                                             input_names=['x','a','b','c'],
-		                                             outputs=dataset['outputs'],
-		                                             output_names=['response'],
-		                                             degree=1)[:]
-
-		result10 = kosh_operators.KoshSensitivityPlots(dataset['inputs'],
-		                                             method='pce_score_network',
-		                                             input_names=['x','a','b','c'],
-		                                             outputs=dataset['outputs'],
-		                                             output_names=['response'],
-		                                             degree=1)[:]
-
-
-
-
-	
+	np.testing.assert_array_almost_equal(moat_effects_actual,
+										 moat_effects_expected)
+		

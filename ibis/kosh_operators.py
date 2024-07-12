@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import scipy.stats as sts
 from kosh.operators.core import KoshOperator
 from ibis import mcmc, sensitivity
 
@@ -88,14 +89,18 @@ class KoshMCMC(KoshOperator):
 		for input_ in inputs[1:]:
 			X = np.append(X, input_[:], axis=0)
 
-		Nsamp, Ndim = X.shape
+		try:
+			Nsamp, Ndim = X.shape
+		except:
+			Nsamp = len(X)
+			Ndim = 1
 
 		method = self.options.get("method", "default_mcmc")
 		input_names = self.options.get("input_names")
 		inputs_low = self.options.get("inputs_low")
 		inputs_high = self.options.get("inputs_high")
 		proposal_sigmas = self.options.get("proposal_sigmas")
-		prior = self.options.get("prior", [None]*Ndim)
+		prior = self.options.get("prior", [sts.uniform.pdf]*Ndim)
 		unscaled_low = self.options.get("unscaled_low", None)
 		unscaled_high = self.options.get("unscaled_high", None)
 		scaling = self.options.get("scaling", None)
@@ -160,6 +165,9 @@ class KoshOneAtATimeEffects(KoshOperator):
 
 	def __init__(self, *args, **options):
 		"""
+				:param method: The sampling method that was used. Options are 'OAT'
+		or 'MOAT'.
+		:type method: string
 		:param inputs: The input datasets. Kosh datasets of one or more arrays.
 		The arrays should have features as columns and observation as rows.
 		:type inputs: Kosh datasets
@@ -168,11 +176,8 @@ class KoshOneAtATimeEffects(KoshOperator):
 		:param outputs: The output dataset. Rows correspond to rows in the feature data.
 		The arrays should have features as columns and observation as rows.
 		:type outputs: Kosh datasets
-		:param output_name: The name of the output variable.
-		:type output_name: str
-		:param method: The sampling method that was used. Options are 'OAT'
-		or 'MOAT'.
-		:type method: string
+		:param output_names: The names of the output variables.
+		:type output_names: str
 		"""
 		super(KoshOneAtATimeEffects, self).__init__(*args, **options)
 		self.options = options
@@ -184,14 +189,17 @@ class KoshOneAtATimeEffects(KoshOperator):
 		X = inputs[0][:]
 		for input_ in inputs[1:]:
 			X = np.append(X, input_[:], axis=0)
-		Nsamp, Ndim = X.shape
+		try:
+			Nsamp, Ndim = X.shape
+		except:
+			Nsamp = len(X)
+			Ndim = 1
 
-		return_option = self.options.get("return_option")
 		method = self.options.get("method")
 		input_names = self.options.get("input_names",
 											list(string.ascii_lowercase)[:Ndim])
 		outputs = self.options.get("outputs")
-		output_name = self.options.get("output_name", "response")
+		output_names = self.options.get("output_names", list(map(str, range(Ndim))))
 		degree = self.options.get("degree", "1")
 		interaction_only = self.options.get("interaction_only", True)
 		use_p_value = self.options.get("use_p_value", False)
@@ -206,7 +214,7 @@ class KoshOneAtATimeEffects(KoshOperator):
 			effects = sensitivity.morris_effects(X, Y)
 
 		else:
-			msg = f"Method must be one of 'OAT', 'MOAT', or 'FF'. Was given "
+			msg = f"Method must be 'OAT' or 'MOAT'. Was given "
 			msg += f"{method}"
 			raise ValueError(msg)
 
@@ -277,7 +285,11 @@ class KoshSensitivityPlots(KoshOperator):
 		X = inputs[0][:]
 		for input_ in inputs[1:]:
 			X = np.append(X, input_[:], axis=0)
-		Nsamp, Ndim = X.shape
+		try:
+			Nsamp, Ndim = X.shape
+		except:
+			Nsamp = len(X)
+			Ndim = 1
 
 		methods = ["lasso", "sensitivity", "f_score", "mutual_info_score", "pce_score",
 				   "f_score_rank", "mutual_info_rank", "pce_rank", "f_score_network",
@@ -306,47 +318,54 @@ class KoshSensitivityPlots(KoshOperator):
 		# Read in output dataset
 		Y = np.array(outputs[:])
 
-		fig, ax = plt.subplots(1, 1)
 		if method == "lasso":
-			output = sensitivity.lasso_path_plot([ax], X, Y, input_names, output_names,
-												 degree=degree, method='lasso')
+			fig, ax = plt.subplots(1, len(output_names))
+			sensitivity.lasso_path_plot(ax, X, Y, input_names, output_names,
+										degree=degree, method='lasso')
 		elif method == "sensitivity":
-			output = sensitivity.sensitivity_plot([ax], surrogate_model, input_names,
-												  output_names, input_ranges,
-												  num_plot_points=num_plot_points,
-												  num_seed_points=num_seed_points, seed=seed)
+			fig, ax = plt.subplots(len(input_names), len(output_names))
+			sensitivity.sensitivity_plot(ax, surrogate_model, input_names,
+										 output_names, input_ranges,
+										 num_plot_points=num_plot_points,
+										 num_seed_points=num_seed_points, seed=seed)
 		elif method == "f_score":
-			output = sensitivity.f_score_plot([ax], X, Y, input_names, output_names,
-									 		  degree=degree, interaction_only=interaction_only,
-									 		  use_p_value=use_p_value)
+			fig, ax = plt.subplots(1, len(output_names))
+			sensitivity.f_score_plot(ax, X, Y, input_names, output_names,
+									 degree=degree, interaction_only=interaction_only,
+									 use_p_value=use_p_value)
 		elif method == "mutual_info_score":
-			output = sensitivity.mutual_info_score_plot([ax], X, Y, input_names, output_names,
-											   			n_neighbors=n_neighbors)
+			fig, ax = plt.subplots(1, len(output_names))
+			sensitivity.mutual_info_score_plot(ax, X, Y, input_names, output_names,
+											   n_neighbors=n_neighbors)
 		elif method == "pce_score":
-			output = sensitivity.pce_score_plot([ax], X, Y, input_names, output_names,
-												input_ranges, degree=degree,
-												model_degrees=model_degrees)
+			fig, ax = plt.subplots(1, len(output_names))
+			sensitivity.pce_score_plot(ax, X, Y, input_names, output_names,
+									   input_ranges, degree=degree,
+									   model_degrees=model_degrees)
 		elif method == "f_score_rank":
-			output = sensitivity.f_score_rank_plot([ax], X, Y, input_names, output_names,
-												   degree=degree, interaction_only=interaction_only,
-												   use_p_value=use_p_value)
+			fig, ax = plt.subplots(1, 1)
+			sensitivity.f_score_rank_plot(ax, X, Y, input_names, output_names,
+										  degree=degree, interaction_only=interaction_only,
+										  use_p_value=use_p_value)
 		elif method == "mutual_info_rank":
-			output = sensitivity.mutual_info_rank_plot([ax], X, Y, input_names, output_names,
-													   n_neighbors=n_neighbors)
+			fig, ax = plt.subplots(1, 1)
+			sensitivity.mutual_info_rank_plot(ax, X, Y, input_names, output_names,
+											  n_neighbors=n_neighbors)
 		elif method == "pce_rank":
-			output = sensitivity.pce_rank_plot([ax], X, Y, input_names, output_names, input_ranges,
-											   degree=degree, model_degrees=model_degrees)
+			fig, ax = plt.subplots(1, 1)
+			sensitivity.pce_rank_plot(ax, X, Y, input_names, output_names, input_ranges,
+									  degree=degree, model_degrees=model_degrees)
 		elif method == "f_score_network":
-			fig, ax = plt.subplots(1, 3)
-			output = sensitivity.f_score_network_plot([ax], X, Y, input_names, output_names,
-													  degree=degree, max_size=max_size,
-													  label_size=label_size, alpha=alpha)
+			fig, ax = plt.subplots((degree-1), len(output_names))
+			sensitivity.f_score_network_plot(ax, X, Y, input_names, output_names,
+											 degree=degree, max_size=max_size,
+											 label_size=label_size, alpha=alpha)
 		elif method == "pce_network":
-			fig, ax = plt.subplots(1, 3)
-			output = sensitivity.pce_network_plot([ax], X, Y, input_names, output_names,
-												  input_ranges, degree=degree,
-												  model_degrees=model_degrees, max_size=max_size,
-												  label_size=label_size, alpha=alpha)
+			fig, ax = plt.subplots((degree-1), len(output_names))
+			sensitivity.pce_network_plot(ax, X, Y, input_names, output_names,
+										 input_ranges, degree=degree,
+										 model_degrees=model_degrees, max_size=max_size,
+										 label_size=label_size, alpha=alpha)
 		else:
 			msg = f"Method should be one of the following: {methods}."
 			msg += f"Was given {method}."
@@ -355,6 +374,6 @@ class KoshSensitivityPlots(KoshOperator):
 		if save_plot:
 			names = "_".join(output_names)
 			fileName = f"{names}_{method}_plot.png"
-			output.savefig(fileName)
+			fig.savefig(fileName)
 
-		return output
+		return fig
