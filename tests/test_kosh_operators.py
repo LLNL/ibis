@@ -154,7 +154,6 @@ class TestUQMethods(unittest.TestCase):
 													0.37342699, 0.18809968, 0.21884804, 0.13397646, 0.13397646]),
 							   'input_C': np.array([0.29237039, 0.29237039, 0.29237039, 0.29237039, 0.21112243,
 													0.21112243, 0.11679129, 0.04605797, 0.04880956, 0.04880956])}
-		#breakpoint()
 		for name in self.input_names:
 			np.testing.assert_array_almost_equal(result[0][name],
 												 prior_chain_expected[name])
@@ -353,6 +352,8 @@ class TestUQMethods(unittest.TestCase):
 
 		for m in methods:
 			os.remove(f"output_A_output_B_{m}_plot.png")
+
+		
 
 
 if __name__ == '__main__':

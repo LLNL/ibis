@@ -33,7 +33,7 @@ scipy = "*"
 matplotlib = "*"
 networkx = "*"
 trata = "*"
-salib = "*"
+kosh = "*"
 
 [tool.poetry.dev-dependencies]
 sphinx_rtd_theme = "*"
