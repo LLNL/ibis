@@ -12,7 +12,7 @@ class KoshMCMC(KoshOperator):
     model, prior distribution, etc. MCMC sampling chains are
     """
 
-    types = {"numpy": ["list", ]}
+    types = {"numpy": ["mcmcobj", ]}
 
     def __init__(self, *args, **options):
         """
@@ -125,13 +125,16 @@ class KoshMCMC(KoshOperator):
             raise ValueError(msg)
 
         for i, name in enumerate(input_names):
+            if (isinstance(unscaled_low, list)) and (isinstance(unscaled_high, list)):
+                unscaled_low = unscaled_low[i]
+                unscaled_high = unscaled_high[i]
             mcmc_obj.add_input(name=name,
                                low=inputs_low[i],
                                high=inputs_high[i],
                                proposal_sigma=proposal_sigmas[i],
                                prior=prior[i],
-                               unscaled_low=unscaled_low[i],
-                               unscaled_high=unscaled_high[i],
+                               unscaled_low=unscaled_low,
+                               unscaled_high=unscaled_high,
                                scaling=scaling)
         for i, name in enumerate(output_names):
             mcmc_obj.add_output(event=event,
@@ -147,10 +150,8 @@ class KoshMCMC(KoshOperator):
                            n_chains=n_chains,
                            prior_only=prior_only,
                            seed=seed)
-        chains = mcmc_obj.get_chains(flattened=flattened,
-                                     scaled=scaled)
 
-        return [chains, mcmc_obj]
+        return mcmc_obj
 
 
 class KoshOneAtATimeEffects(KoshOperator):

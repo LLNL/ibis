@@ -77,6 +77,8 @@ class TestUQMethods(unittest.TestCase):
         }
         self.s_model = GaussianProcessRegressor().fit(self.X, self.Y)
         self.ranges = [[0, 1], [0, 1], [0, 1]]
+        self.flattened = False
+        self.scaled = True
         fileName = "mytestfile.hdf5"
         with h5py.File(fileName, "w") as f:
             f.create_dataset("inputs", data=self.X)
@@ -115,6 +117,7 @@ class TestUQMethods(unittest.TestCase):
                                          prior_only=True,
                                          seed=self.seed,
                                          flattened=False)[:]
+        chains = result.get_chains(flattened=self.flattened, scaled=self.scaled)
 
         prior_expected = {'input_A': np.array([[0.32151482, 0.44159015, 0.28441874, 0.42174969, 0.3671779 ,
                                                 0.33179506, 0.48374379, 0.511352  , 0.60738642, 0.60738642]]),
@@ -144,17 +147,19 @@ class TestUQMethods(unittest.TestCase):
                                           prior_only=False,
                                           seed=self.seed,
                                           flattened=True)[:]
+        chains2 = result2.get_chains(flattened=self.flattened, scaled=self.scaled)
 
-        post_expected = {'input_A': np.array([0.16435425, 0.16435425, 0.16435425, 0.16435425, 0.11053923,
-                                              0.11053923, 0.26248796, 0.42028082, 0.51631524, 0.51631524]),
-                         'input_B': np.array([0.15977588, 0.15977588, 0.15977588, 0.15977588, 0.37342699,
-                                              0.37342699, 0.18809968, 0.21884804, 0.13397646, 0.13397646]),
-                         'input_C': np.array([0.29237039, 0.29237039, 0.29237039, 0.29237039, 0.21112243,
-                                              0.21112243, 0.11679129, 0.04605797, 0.04880956, 0.04880956])}
+        post_expected = {'input_A': np.array([[0.12877608, 0.24885141, 0.09168   , 0.09168   , 0.03786498,
+                                               0.03786498, 0.13003829, 0.13003829, 0.22607271, 0.2609016 ]]),
+                         'input_B': np.array([[0.14939956, 0.25190734, 0.19828064, 0.19828064, 0.41193175,
+                                               0.41193175, 0.34268075, 0.34268075, 0.25780918, 0.10275209]]),
+                         'input_C': np.array([[0.20644045, 0.20231661, 0.16700772, 0.16700772, 0.08575977,
+                                               0.08575977, 0.08532267, 0.08532267, 0.08807426, 0.2397848 ]])}
+
         for name in self.input_names:
-            np.testing.assert_array_almost_equal(result[0][name],
+            np.testing.assert_array_almost_equal(chains[name],
                                                  prior_expected[name])
-            np.testing.assert_array_almost_equal(result2[0][name],
+            np.testing.assert_array_almost_equal(chains2[name],
                                                  post_expected[name])
 
 
@@ -182,6 +187,7 @@ class TestUQMethods(unittest.TestCase):
                                          prior_only=True,
                                          seed=self.seed,
                                          flattened=False)[:]
+        chains = result.get_chains(flattened=self.flattened, scaled=self.scaled)
         prior_expected = {'input_A': np.array([[0.46345716, 0.50974877, 0.63393836, 0.63393836, 0.71894928,
                                                 0.66062354, 0.66062354, 0.73850457, 0.73850457, 0.49556849]]),
                           'input_B': np.array([[0.4838711 , 0.07577377, 0.06375146, 0.06375146, 0.17948177,
@@ -212,18 +218,20 @@ class TestUQMethods(unittest.TestCase):
                                           prior_only=False,
                                           seed=self.seed,
                                           flattened=True)[:]
-        post_expected = {'input_A': np.array([0.17669621, 0.17669621, 0.3008858 , 0.40131393, 0.40131393,
-                                              0.34298819, 0.67718792, 0.63688562, 0.63688562, 0.51763303]),
-                         'input_B': np.array([0.23788465, 0.23788465, 0.22586234, 0.75287632, 0.75287632,
-                                              0.8821385 , 0.54468051, 0.52673767, 0.52673767, 0.33972996]),
-                         'input_C': np.array([0.77980347, 0.77980347, 0.60195062, 0.15267065, 0.15267065,
-                                              0.44959846, 0.41060721, 0.38567044, 0.38567044, 0.43959737]),
-                         'tau_x': np.array([0.3891361 , 0.3891361 , 0.41292263, 0.44855446, 0.44855446,
-                                            0.53568224, 0.46209016, 0.46018472, 0.46018472, 0.47521032])}
+        chains2 = result2.get_chains(flattened=self.flattened, scaled=self.scaled)
+        post_expected = {'input_A': np.array([[0.69888725, 0.69888725, 0.82307684, 0.92350497, 0.92350497,
+                                               0.65506841, 0.6660201 , 0.74390113, 0.74390113, 0.62464854]]),
+                         'input_B': np.array([[0.35711477, 0.35711477, 0.34509246, 0.87210644, 0.87210644,
+                                               0.78541696, 0.55307605, 0.78326259, 0.78326259, 0.59625489]]),
+                         'input_C': np.array([[0.87951977, 0.87951977, 0.70166692, 0.25238694, 0.25238694,
+                                               0.27001599, 0.50338092, 0.54389587, 0.54389587, 0.5978228 ]]),
+                         'tau_x': np.array([[0.15326688, 0.15326688, 0.17705341, 0.21268524, 0.21268524,
+                                             0.23775688, 0.29051215, 0.26387024, 0.26387024, 0.27889584]])}
+
         for name in start.keys():
-            np.testing.assert_array_almost_equal(result[0][name],
+            np.testing.assert_array_almost_equal(chains[name],
                                                  prior_expected[name])
-            np.testing.assert_array_almost_equal(result2[0][name],
+            np.testing.assert_array_almost_equal(chains2[name],
                                                  post_expected[name])
 
     def test_kosh_sensitivity_plots(self):
