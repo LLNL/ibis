@@ -16,6 +16,7 @@ homepage = "https://github.com/llnl/ibis"
 documentation = "https://ibis.readthedocs.io/"
 authors = [
     "Andrew Fillmore <fillmore1@llnl.gov>", "Andrew Fillmore",
+    "Renee Olson <olson59@llnl.gov>", "Renee Olson",
 ]
 maintainers = [
     "Renee Olson <olson59@llnl.gov>", "Renee Olson",
