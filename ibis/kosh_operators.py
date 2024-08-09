@@ -12,7 +12,7 @@ class KoshMCMC(KoshOperator):
     model, prior distribution, etc. MCMC sampling chains are
     """
 
-    types = {"numpy": ["mcmcobj", ]}
+    types = {"numpy": ["ibis/mcmc", ]}
 
     def __init__(self, *args, **options):
         """
