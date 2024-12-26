@@ -4,7 +4,6 @@ from __future__ import absolute_import
 import os
 import sys
 import unittest
-import pytest
 import warnings
 import numpy as np
 import scipy.stats as sts
@@ -12,7 +11,6 @@ from sklearn.gaussian_process import GaussianProcessRegressor
 from ibis import mcmc
 from ibis import filter
 from ibis import likelihoods
-from ibis import sensitivity
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
 
