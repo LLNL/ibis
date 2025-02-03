@@ -709,12 +709,17 @@ def sensitivity_plot(ax, surrogate_model, feature_names, response_names, feature
             response_prediction = surrogate_model.predict(new_feature_data)
 
             for response_index, response_name in enumerate(response_names):
-                ax[feature_index, response_index].set_xlabel(feature_name)
-                ax[feature_index, response_index].set_ylabel(response_name)
-                ax[feature_index, response_index].plot(dimension_sweep,
-                                                       response_prediction[:, response_index],
-                                                       color=color,
-                                                       alpha=.75)
+                if len(response_names) == 1:
+                    ax[feature_index].set_xlabel(feature_name)
+                    ax[feature_index].set_ylabel(response_name)
+                    ax[feature_index].plot(dimension_sweep, response_prediction, color=color, alpha=.75)
+                else:
+                    ax[feature_index, response_index].set_xlabel(feature_name)
+                    ax[feature_index, response_index].set_ylabel(response_name)
+                    ax[feature_index, response_index].plot(dimension_sweep,
+                                                           response_prediction[:, response_index],
+                                                           color=color,
+                                                           alpha=.75)
 
 
 def f_score_plot(ax, feature_data, response_data, feature_names, response_names,
