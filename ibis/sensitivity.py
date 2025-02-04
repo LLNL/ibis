@@ -73,6 +73,10 @@ def _variance_network_plot(ax,
     feature_interaction_names = np.array(feature_interaction_names)
     powers_degree = powers.sum(axis=1)
 
+    # Reshape axis for case with one output gives a 1D array; force to 2D
+    if len(ax.shape) == 1:
+        ax = ax.reshape(-1,1)
+
     for response_column_data, response_column_name, plot_column in zip(response_data.T,
                                                                        response_names, ax.T):
 
@@ -217,9 +221,15 @@ def _rank_plot(ax, feature_data, response_data, feature_names, response_names, s
     num_features = feature_interaction_data.shape[1]
     num_responses = response_data.shape[1]
 
-    scores = np.row_stack([score_function(feature_interaction_data,
-                                          response_column,
-                                          powers=powers, **kwargs) for response_column in response_data.T])
+    if "pce_score" in str(score_function):
+        scores = np.row_stack([score_function(feature_interaction_data,
+                                              response_column, powers=powers,
+                                              **kwargs) for response_column in response_data.T])
+
+    else:
+        scores = np.row_stack([score_function(feature_interaction_data,
+                                              response_column,
+                                              **kwargs) for response_column in response_data.T])
 
     order = np.argsort(-scores)
     rank_table = np.argsort(order)

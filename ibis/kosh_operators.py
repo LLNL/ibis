@@ -370,12 +370,12 @@ class KoshSensitivityPlots(KoshOperator):
             sensitivity.pce_rank_plot(ax, X, Y, input_names, output_names, input_ranges,
                                       degree=degree, model_degrees=model_degrees)
         elif method == "f_score_network":
-            fig, ax = plt.subplots((degree-1), len(output_names))
+            fig, ax = plt.subplots(len(output_names), (degree-1))
             sensitivity.f_score_network_plot(ax, X, Y, input_names, output_names,
                                              degree=degree, max_size=max_size,
                                              label_size=label_size, alpha=alpha)
         elif method == "pce_network":
-            fig, ax = plt.subplots((degree-1), len(output_names))
+            fig, ax = plt.subplots(len(output_names), (degree-1))
             sensitivity.pce_network_plot(ax, X, Y, input_names, output_names,
                                          input_ranges, degree=degree,
                                          model_degrees=model_degrees, max_size=max_size,

@@ -13,13 +13,14 @@ from trata.sampler import OneAtATimeSampler, MorrisOneAtATimeSampler, SobolIndex
 import imageio
 from skimage import color
 from skimage.metrics import structural_similarity
+import matplotlib.pyplot as plt
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
 
 class TestUQMethods(unittest.TestCase):
     def setUp(self):
         self.test_dir = os.path.dirname(os.path.abspath(__file__))
-        self.baseline_dir = os.path.join(test_dir, 'baseline')
+        self.baseline_dir = os.path.join(self.test_dir, 'baseline')
         self.X = np.array([[ 1.24137187,  8.21363941,  2.35916309, 12.98515141],
                            [ 3.97871385,  3.4634106 ,  1.81173418, 16.90803561],
                            [ 0.97135657,  8.55927091,  2.25817247, 14.90514011],
@@ -72,7 +73,7 @@ class TestUQMethods(unittest.TestCase):
                            [ 4.23295714,  9.71703376,  2.23377103,  3.42678347]])
         def hill(x, a, b, c):
             return a * (x ** c) / (x ** c + b ** c)
-        self.Y = hill(*X.T).reshape(-1, 1)
+        self.Y = hill(*self.X.T).reshape(-1, 1)
         self.input_names = ['x', 'a', 'b', 'c']
         self.ranges = np.array([[0, 5], [2, 10], [1, 3], [1, 20]])
         self.default = np.array([1, 5, 2, 5])
@@ -93,7 +94,8 @@ class TestUQMethods(unittest.TestCase):
         OAT_response = OAT_samples.sum(axis=1)**2
         effects = sensitivity.one_at_a_time_effects(OAT_samples, OAT_response)
 
-        expected_effects = [[2.5 2.5 2.5], [3.5 3.5 3.5]]
+        expected_effects = [[25., 23., 25., 22.], [30., 31., 27., 41.]]
+
         np.testing.assert_array_almost_equal(expected_effects, effects)
 
     def test_moat_effects(self):
@@ -103,16 +105,17 @@ class TestUQMethods(unittest.TestCase):
         MOAT_response = MOAT_samples.sum(axis=1)**2
         m_effects = sensitivity.morris_effects(MOAT_samples, MOAT_response)
 
-        expected_m_effects = [[3.09781215, 2.58698276, 2.11572450],
-                              [2.26111775, 2.75137755, 2.23885117],
-                              [2.22386575, 1.97233407, 3.13097413],
-                              [3.29495831, 3.50217557, 3.46328596],
-                              [3.41209830, 2.90134331, 3.48197173],
-                              [3.49195669, 3.61229935, 3.63591695],
-                              [3.60273245, 3.68845525, 3.45326514],
-                              [1.61508043, 2.15217971, 2.22583771],
-                              [2.11362344, 2.80315851, 3.74543302],
-                              [4.62947895, 4.41879087, 3.97469336]]
+        expected_m_effects = [[40.55155969, 35.56105888, 33.46257093, 28.67382446],
+                              [60.08594273, 34.63303031, 60.9013206,  46.74642484],
+                              [39.22990622, 48.39725841, 40.08809413, 42.40868939],
+                              [36.83668827, 35.56724055, 36.05495067, 46.46449389],
+                              [45.57264425, 47.64336072, 63.77872573, 57.21152416],
+                              [43.98668581, 44.43441978, 55.12472458, 50.43371629],
+                              [63.6991378,  65.61514284, 65.62170232, 65.59540061],
+                              [24.95859767, 35.96762307, 29.15773975, 38.54903518],
+                              [59.04113187, 51.55765365, 51.10504083, 57.44843722],
+                              [32.86249357, 49.73056039, 32.98620264, 42.01241613]]
+
         np.testing.assert_array_almost_equal(expected_m_effects, m_effects)
 
     def test_sobol_indices(self):
@@ -123,8 +126,8 @@ class TestUQMethods(unittest.TestCase):
 
         first_order, total_order = sensitivity.sobol_indices(feature_data=sobol_samples,
                                                              response_data=sobol_response)
-        first_expected = np.array([0.4151893 , 0.29543508, 0.26772798])
-        total_expected = np.array([0.96164261, 0.63103866, 0.65943497])
+        first_expected = np.array([0.09444798, 0.07956545, 0.13519539, 0.11711406])
+        total_expected = np.array([0.79952816, 0.76486211, 0.9250325,  0.84982509])
 
         np.testing.assert_array_almost_equal(first_expected, first_order)
         np.testing.assert_array_almost_equal(total_expected, total_order)
@@ -145,7 +148,7 @@ class TestUQMethods(unittest.TestCase):
 
     def test_f_p_score(self):
         fig, ax = plt.subplots(1, 1)
-        sensitivity.f_score_plot([ax], X, Y, ['x', 'a', 'b', 'c'], ['y'],
+        sensitivity.f_score_plot([ax], self.X, self.Y, ['x', 'a', 'b', 'c'], ['y'],
                                  degree=2, use_p_value=True)
         plt.savefig("out_fp_score")
         plot_expected = "f_p_score_plot.png"
@@ -159,7 +162,7 @@ class TestUQMethods(unittest.TestCase):
 
     def test_mutual_info_score(self):
         fig, ax = plt.subplots(1, 1)
-        ibis.sensitivity.mutual_info_score_plot([ax], self.X, self.Y, self.input_names,
+        sensitivity.mutual_info_score_plot([ax], self.X, self.Y, self.input_names,
                                                 self.output_names, n_neighbors=2)
         plt.savefig("out_mutual_info_score")
         plot_expected = "mutual_info_score_plot.png"
@@ -174,7 +177,7 @@ class TestUQMethods(unittest.TestCase):
     def test_pce_score(self):
         fig, ax = plt.subplots(1, 1)
         sensitivity.pce_score_plot([ax], self.X, self.Y, self.input_names, self.output_names,
-                                   self.input_ranges, degree=2, model_degrees=2)
+                                   self.ranges, degree=2, model_degrees=2)
         plt.savefig("out_pce_score")
         plot_expected = "pce_score_plot.png"
         base_dir = os.path.join(self.baseline_dir, plot_expected)
@@ -201,10 +204,10 @@ class TestUQMethods(unittest.TestCase):
     def test_sensitivity_plot(self):
         fig, ax = plt.subplots(1, 4)
         sensitivity.sensitivity_plot(ax, self.surrogate, self.input_names, self.output_names,
-                                     ranges=self.input_ranges, num_plot_points=10, num_seed_points=2,
+                                     self.ranges, num_plot_points=10, num_seed_points=2,
                                      seed=3)
         plt.savefig("out_sensitivity")
-        plot_expected = "out_sensitivity_plot.png"
+        plot_expected = "sensitivity_plot.png"
         base_dir = os.path.join(self.baseline_dir, plot_expected)
 
         base_img = color.rgb2gray(imageio.v2.imread(base_dir)[:, :, :3])
@@ -213,8 +216,103 @@ class TestUQMethods(unittest.TestCase):
         score = structural_similarity(base_img, out_img, data_range=1.0)
         assert score > self.min_score
 
-    def test_
+    def test_f_score_rank_plot(self):
+        fig, ax = plt.subplots(1, 1)
+        sensitivity.f_score_rank_plot(ax, self.X, self.Y, self.input_names, self.output_names,
+                                      degree=2, interaction_only=True, use_p_value=False)
+        plt.savefig("out_f_score_rank_io")
+        plot_expected = "f_score_rank_plot_io.png"
+        base_dir = os.path.join(self.baseline_dir, plot_expected)
+        base_img = color.rgb2gray(imageio.v2.imread(base_dir)[:, :, :3])
+        out_img = color.rgb2gray(imageio.v2.imread("out_f_score_rank_io.png")[:, :, :3])
+        score = structural_similarity(base_img, out_img, data_range=1.0)
+        assert score > self.min_score
 
+        sensitivity.f_score_rank_plot(ax, self.X, self.Y, self.input_names, self.output_names,
+                                      degree=2, interaction_only=True, use_p_value=True)
+        plt.savefig("out_f_score_rank_io_pval")
+        plot_expected = "f_score_rank_plot_io_pval.png"
+        base_dir = os.path.join(self.baseline_dir, plot_expected)
+        base_img = color.rgb2gray(imageio.v2.imread(base_dir)[:, :, :3])
+        out_img = color.rgb2gray(imageio.v2.imread("out_f_score_rank_io_pval.png")[:, :, :3])
+        score = structural_similarity(base_img, out_img, data_range=1.0)
+        assert score > self.min_score
+
+        sensitivity.f_score_rank_plot(ax, self.X, self.Y, self.input_names, self.output_names,
+                                      degree=2, interaction_only=False, use_p_value=False)
+        plt.savefig("out_f_score_rank")
+        plot_expected = "f_score_rank_plot.png"
+        base_dir = os.path.join(self.baseline_dir, plot_expected)
+        base_img = color.rgb2gray(imageio.v2.imread(base_dir)[:, :, :3])
+        out_img = color.rgb2gray(imageio.v2.imread("out_f_score_rank.png")[:, :, :3])
+        score = structural_similarity(base_img, out_img, data_range=1.0)
+        assert score > self.min_score
+
+        sensitivity.f_score_rank_plot(ax, self.X, self.Y, self.input_names, self.output_names,
+                                      degree=2, interaction_only=False, use_p_value=True)
+        plt.savefig("out_f_score_rank_pval")
+        plot_expected = "f_score_rank_plot_pval.png"
+        base_dir = os.path.join(self.baseline_dir, plot_expected)
+        base_img = color.rgb2gray(imageio.v2.imread(base_dir)[:, :, :3])
+        out_img = color.rgb2gray(imageio.v2.imread("out_f_score_rank_pval.png")[:, :, :3])
+        score = structural_similarity(base_img, out_img, data_range=1.0)
+        assert score > self.min_score
+
+    def test_mutual_info_rank_plot(self):
+        fig, ax = plt.subplots(1, 1)
+        sensitivity.mutual_info_rank_plot(ax, self.X, self.Y, self.input_names, self.output_names,
+                                          n_neighbors=2)
+        plt.savefig("out_mutual_info_rank")
+        plot_expected = "mutual_info_rank_plot.png"
+        base_dir = os.path.join(self.baseline_dir, plot_expected)
+
+        base_img = color.rgb2gray(imageio.v2.imread(base_dir)[:, :, :3])
+        out_img = color.rgb2gray(imageio.v2.imread("out_mutual_info_rank.png")[:, :, :3])
+
+        score = structural_similarity(base_img, out_img, data_range=1.0)
+        assert score > self.min_score
+
+    def test_pce_rank_plot(self):
+        fig, ax = plt.subplots(1, 1)
+        sensitivity.pce_rank_plot(ax, self.X, self.Y, self.input_names, self.output_names,
+                                  self.ranges, degree=2, model_degrees=2)
+        plt.savefig("out_pce_rank")
+        plot_expected = "pce_rank_plot.png"
+        base_dir = os.path.join(self.baseline_dir, plot_expected)
+
+        base_img = color.rgb2gray(imageio.v2.imread(base_dir)[:, :, :3])
+        out_img = color.rgb2gray(imageio.v2.imread("out_pce_rank.png")[:, :, :3])
+
+        score = structural_similarity(base_img, out_img, data_range=1.0)
+        assert score > self.min_score
+
+    def test_f_score_network_plot(self):
+        fig, ax = plt.subplots(1, 2)
+        sensitivity.f_score_network_plot(ax, self.X, self.Y, self.input_names, self.output_names,
+                                         degree=3)
+        plt.savefig("out_f_score_network")
+        plot_expected = "f_score_network_plot.png"
+        base_dir = os.path.join(self.baseline_dir, plot_expected)
+
+        base_img = color.rgb2gray(imageio.v2.imread(base_dir)[:, :, :3])
+        out_img = color.rgb2gray(imageio.v2.imread("out_f_score_network.png")[:, :, :3])
+
+        score = structural_similarity(base_img, out_img, data_range=1.0)
+        assert score > 0.8
+
+    def test_pce_network_plot(self):
+        fig, ax = plt.subplots(1, 2)
+        sensitivity.pce_network_plot(ax, self.X, self.Y, self.input_names, self.output_names,
+                                     self.ranges, degree=3, model_degrees=3)
+        plt.savefig("out_pce_network")
+        plot_expected = "pce_network_plot.png"
+        base_dir = os.path.join(self.baseline_dir, plot_expected)
+
+        base_img = color.rgb2gray(imageio.v2.imread(base_dir)[:, :, :3])
+        out_img = color.rgb2gray(imageio.v2.imread("out_pce_network.png")[:, :, :3])
+
+        score = structural_similarity(base_img, out_img, data_range=1.0)
+        assert score > self.min_score
 
 if __name__ == '__main__':
     unittest.main()

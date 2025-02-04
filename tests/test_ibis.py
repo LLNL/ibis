@@ -579,6 +579,5 @@ class TestUQMethods(unittest.TestCase):
              0.16821533, 0.26039306, 0.])
         np.testing.assert_array_almost_equal(combined_weights_expected, combined_weights_actual)
 
-
 if __name__ == '__main__':
     unittest.main()
