@@ -81,6 +81,10 @@ class TestUQMethods(unittest.TestCase):
         self.flattened = False
         self.scaled = False
         fileName = "mytestfile.hdf5"
+        work_dir = os.getcwd()
+        file_path = os.path.join(work_dir, fileName)
+        if os.path.exists(file_path):
+            os.remove(file_path)
         with h5py.File(fileName, "w") as f:
             f.create_dataset("observed", data=np.array([.5, .5, .5]))
             f.create_dataset("inputs", data=self.X)
