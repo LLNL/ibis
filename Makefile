@@ -4,8 +4,6 @@ USER_WORKSPACE := $(if $(USER_WORKSPACE),$(USER_WORKSPACE),/usr/workspace/$(USER
 WORKSPACE = $(USER_WORKSPACE)/gitlab/weave/ibis
 IBIS_ENV := $(if $(IBIS_ENV),$(IBIS_ENV),ibis_env)
 
-PYTHON_CMD = /usr/tce/bin/python3
-
 PIP_OPTIONS = --trusted-host wci-repo.llnl.gov --index-url https://wci-repo.llnl.gov/repository/pypi-group/simple --use-pep517
 
 DOCS_PKGS = sphinx nbsphinx nbconvert sphinx-rtd-theme
@@ -25,12 +23,15 @@ BUILDS_DIR := $(if $(CI_BUILDS_DIR),$(CI_BUILDS_DIR)/gitlab/weave/ibis,$(shell p
 define create_env
 	# call from the directory where env will be created
 	# arg1: name of env
-	$(PYTHON_CMD) -m venv $1
+	# $(PYTHON_CMD) -m venv $1
+	/usr/apps/weave/tools/create_venv.sh -p cpu -e $1 -v latest-develop
 	source $1/bin/activate && \
-	which pip && \
-	pip install $(PIP_OPTIONS) --upgrade pip && \
-	pip install $(PIP_OPTIONS) --upgrade setuptools && \
-	pip install $(PIP_OPTIONS) --force pytest
+	pip install . && \
+	which pytest && \
+	pip list
+	# pip install $(PIP_OPTIONS) --upgrade pip && \
+	# pip install $(PIP_OPTIONS) --upgrade setuptools && \
+	# pip install $(PIP_OPTIONS) --force pytest
 endef
 
 
