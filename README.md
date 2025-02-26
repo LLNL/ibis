@@ -1,7 +1,7 @@
 <img align="left" width="75" height="75" src="./logo.png"> <br> 
 # IBIS
 
-LLNL's Interactive Bayesian Inference and Sensitivity, or IBIS, provides tools to enable understanding how the output of a model is impacted by uncertainty in its inputs. With the sensitivity module we can rank and visualize the effect of inputs on the output. The mcmc module enables us to incorporate experimental data into our understanding of input and output distributions with Bayesian inference.
+LLNL's Interactive Bayesian Inference and Sensitivity, or IBIS, provides tools to enable understanding how the output of a model is impacted by uncertainty in its inputs. With the sensitivity module we can rank and visualize the effect of inputs on the computational model output. The mcmc module enables us to incorporate experimental data into our understanding of input and output distributions with Bayesian inference.
 
 Sensitivity studies
 A variety of methods are availble in IBIS to understand and compare the impacts of model inputs.
