@@ -1,23 +1,37 @@
 <img align="left" width="75" height="75" src="./logo.png"> <br> 
 # IBIS
 
-LLNL's Interactive Bayesian Inference and Sensitivity, or IBIS, is designed to be used after a number of simulations have run to completion, to predict the results of future simulation runs.
+LLNL's Interactive Bayesian Inference and Sensitivity, or IBIS, provides tools to enable understanding how the output of a model is impacted by uncertainty in its inputs. With the sensitivity module we can rank and visualize the effect of inputs on the computational model output. The mcmc module enables us to incorporate experimental data into our understanding of input and output distributions with Bayesian inference.
 
-Assessment of system performance variation induced by uncertain parameter values is referred to as uncertainty quantification (UQ). Typically, the Monte Carlo method is used to perform UQ by assigning probability distributions to uncertain input variables from which to draw samples in order to calculate corresponding output values using surrogate models. Based on the ensemble of output results, the output distribution should statistically describe the output's uncertainty.
+Sensitivity studies
+A variety of methods are availble in IBIS to understand and compare the impacts of model inputs.
+   - F-test: f_score
+   - mutual information score: mutual_info_score
+   - Lasso regression: lasso
+   - sensitivity with "spaghetti plot": sensitivity
+   - One-at-a-time study: including method of Morris
+   - Variance based sensitivity analysis: Sobol indices
+   - polynomial chaos expansion: pce_score
 
-Sensitivity analysis refers to the study of how uncertainty in the output of a mathematical model or system can be attributed to different sources of uncertainty in the inputs. In the data science space, sensitivity analysis is often called feature selection. 
+   Associated modules
+      - sensitivity
+      - pce_model
+      - plots
 
-In general, we have some function $`f`$ that we want to model. This is usually some sort of computer simulation where we vary a set of parameters $`X`$ to produce a set of outputs $`Y=f(X)`$.
-We then ask the questions, "How does $`Y`$ change as $`X`$ changes?" and "Which parts of $`X`$ is $`Y`$ sensitive to?", this is often done so that we can choose to ignore the parameters of $`X`$ which don't affect $`Y`$ in subsequent analyses.
+Bayesian Inference/Calibration
+A Bayesian posterior distribution can be estimated with IBIS's mcmc module. It can estimate input parameter uncertainty and model discrepancy. For more details refer to [Bayesian Calibration of Computer Models](https://www.researchgate.net/publication/4772045_Bayesian_Calibration_of_Computer_Models).
+   - default mcmc: Metropolis-Hastings algorithm and multivariate normal likelihood
+   - discrepancy mcmc: We can additionally estimate "tau" model discrepancy parameters
 
-The IBIS package contains 7 modules:
-   - filter
-   - likelihoods
-   - mcmc
-   - mcmc_diagnostics
-   - sensitivity
-   - pce_model
-   - plots
+   Associated modules
+      - mcmc
+      - mcmc_diagnostics
+
+Kosh operators
+If users have data in a Kosh store, it's convenient to use IBIS's Kosh operators to run the various sensitivity methods or create the mcmc object. The following operators are available:
+   - KoshMCMC
+   - KoshOneAtATimeEffects
+   - KoshSensitivityPlots
 
 ## Getting Started
 

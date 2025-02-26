@@ -71,24 +71,28 @@ class TestUQMethods(unittest.TestCase):
         self.input_names = ['input_A', 'input_B', 'input_C']
         self.output_names = ['output_A', 'output_B']
         self.seed = 15
-        self.surrogate_model = {
-            name: GaussianProcessRegressor().fit(self.X, self.Y[:, i])
-            for i, name in enumerate(self.output_names)
-        }
+        self.surrogate_models = [
+            GaussianProcessRegressor().fit(self.X, self.Y[:, i])
+            for i in range(len(self.output_names))
+        ]
         self.s_model = GaussianProcessRegressor().fit(self.X, self.Y)
         self.ranges = [[0, 1], [0, 1], [0, 1]]
+        self.observed_std = [0.1]*3
         self.flattened = False
-        self.scaled = True
+        self.scaled = False
         fileName = "mytestfile.hdf5"
+        work_dir = os.getcwd()
+        file_path = os.path.join(work_dir, fileName)
+        if os.path.exists(file_path):
+            os.remove(file_path)
         with h5py.File(fileName, "w") as f:
+            f.create_dataset("observed", data=np.array([.5, .5, .5]))
             f.create_dataset("inputs", data=self.X)
             f.create_dataset("outputs", data=self.Y)
-            f.close()
 
         self.store = kosh.connect("temp_testing.sql")
         self.dataset = self.store.create("uq_data")
         self.dataset.associate([fileName], 'hdf5')
-
 
     def tearDown(self):
         if os.path.isfile('test_model'):
@@ -96,143 +100,148 @@ class TestUQMethods(unittest.TestCase):
 
     @unittest.skipIf(sys.version_info[0] < 3, reason="Not supported for Python 2")
     def test_kosh_default_mcmc(self):
-        result = kosh_operators.KoshMCMC(self.dataset["inputs"],
+        result = kosh_operators.KoshMCMC(self.dataset["observed"],
                                          method="default_mcmc",
                                          input_names=self.input_names,
-                                         inputs_low=[0.0]*3,
-                                         inputs_high=[1.0]*3,
+                                         low=[0.0]*3,
+                                         high=[1.0]*3,
                                          proposal_sigmas=[0.2]*3,
-                                         prior=[sts.beta(2, 2).pdf]*3,
-                                         outputs=self.dataset["outputs"],
-                                         output_names=self.output_names,
-                                         quantity='x',
-                                         surrogate_model=self.surrogate_model,
-                                         observed_values=[.5]*2,
-                                         observed_std=[.1]*2,
-                                         inputs=self.input_names,
+                                         events=self.output_names,
+                                         quantities=['Y'],
+                                         surrogate_models=self.surrogate_models,
+                                         observed_std=self.observed_std,
                                          total_samples=10,
                                          burn=20,
                                          every=2,
+                                         priors=[sts.beta(2, 2).pdf]*3,
                                          start={name: .5 for name in self.input_names},
                                          prior_only=True,
-                                         seed=self.seed,
-                                         flattened=False)[:]
+                                         seed=self.seed)[:]
         chains = result.get_chains(flattened=self.flattened, scaled=self.scaled)
+        prior_points = np.array(list(chains.values())).squeeze(axis=1).T
 
-        prior_expected = {'input_A': np.array([[0.32151482, 0.44159015, 0.28441874, 0.42174969, 0.3671779 ,
-                                                0.33179506, 0.48374379, 0.511352  , 0.60738642, 0.60738642]]),
-                          'input_B': np.array([[0.78009572, 0.8826035 , 0.8289768 , 0.73403566, 0.7457847 ,
-                                                0.48535026, 0.30002295, 0.48387395, 0.39900237, 0.39900237]]),
-                          'input_C': np.array([[0.45828809, 0.45416425, 0.41885536, 0.36999938, 0.33504304,
-                                                0.3592561 , 0.26492496, 0.48845248, 0.49120407, 0.49120407]])}
+        prior_expected = np.array(
+            [[0.32151482, 0.78009572, 0.45828809],
+             [0.44159015, 0.88260350, 0.45416425],
+             [0.28441874, 0.82897680, 0.41885536],
+             [0.42174969, 0.73403566, 0.36999938],
+             [0.36717790, 0.74578470, 0.33504304],
+             [0.33179506, 0.48535026, 0.35925610],
+             [0.48374379, 0.30002295, 0.26492496],
+             [0.51135200, 0.48387395, 0.48845248],
+             [0.60738642, 0.39900237, 0.49120407],
+             [0.60738642, 0.39900237, 0.49120407]]
+        )
 
-        result2 = kosh_operators.KoshMCMC(self.dataset["inputs"],
+        result2 = kosh_operators.KoshMCMC(self.dataset["observed"],
                                           method="default_mcmc",
                                           input_names=self.input_names,
-                                          inputs_low=[0.0]*3,
-                                          inputs_high=[1.0]*3,
+                                          low=[0.0]*3,
+                                          high=[1.0]*3,
                                           proposal_sigmas=[0.2]*3,
-                                          prior=[sts.beta(2, 2).pdf]*3,
-                                          outputs=self.dataset["outputs"],
-                                          output_names=self.output_names,
-                                          quantity='x',
-                                          surrogate_model=self.surrogate_model,
-                                          observed_values=[.5]*2,
-                                          observed_std=[.1]*2,
-                                          inputs=self.input_names,
+                                          events=self.output_names,
+                                          quantities=['Y'],
+                                          surrogate_models=self.surrogate_models,
+                                          observed_std=self.observed_std,
                                           total_samples=10,
                                           burn=20,
                                           every=2,
+                                          priors=[sts.beta(2, 2).pdf]*3,
                                           start={name: .5 for name in self.input_names},
                                           prior_only=False,
-                                          seed=self.seed,
-                                          flattened=True)[:]
+                                          seed=self.seed)[:]
         chains2 = result2.get_chains(flattened=self.flattened, scaled=self.scaled)
+        post_points = np.array(list(chains2.values())).squeeze(axis=1).T
 
-        post_expected = {'input_A': np.array([[0.12877608, 0.24885141, 0.09168   , 0.09168   , 0.03786498,
-                                               0.03786498, 0.13003829, 0.13003829, 0.22607271, 0.2609016 ]]),
-                         'input_B': np.array([[0.14939956, 0.25190734, 0.19828064, 0.19828064, 0.41193175,
-                                               0.41193175, 0.34268075, 0.34268075, 0.25780918, 0.10275209]]),
-                         'input_C': np.array([[0.20644045, 0.20231661, 0.16700772, 0.16700772, 0.08575977,
-                                               0.08575977, 0.08532267, 0.08532267, 0.08807426, 0.2397848 ]])}
+        post_expected = np.array(
+            [[0.11872447, 0.20079220, 0.42778104],
+             [0.11872447, 0.20079220, 0.42778104],
+             [0.11872447, 0.20079220, 0.42778104],
+             [0.11872447, 0.20079220, 0.42778104],
+             [0.06415268, 0.21254124, 0.39282470],
+             [0.06415268, 0.21254124, 0.39282470],
+             [0.15632600, 0.14329024, 0.39238761],
+             [0.15632600, 0.14329024, 0.39238761],
+             [0.25236042, 0.05841866, 0.39513919],
+             [0.25236042, 0.05841866, 0.39513919]]
+        )
 
-        for name in self.input_names:
-            np.testing.assert_array_almost_equal(chains[name],
-                                                 prior_expected[name])
-            np.testing.assert_array_almost_equal(chains2[name],
-                                                 post_expected[name])
-
+        np.testing.assert_array_almost_equal(prior_points,
+                                             prior_expected)
+        np.testing.assert_array_almost_equal(post_points,
+                                             post_expected)
 
     def test_kosh_discrepancy_mcmc(self):
-        start = {name: .5 for name in self.input_names}
-        start['tau_x'] = .5
-        result = kosh_operators.KoshMCMC(self.dataset["inputs"],
+        result = kosh_operators.KoshMCMC(self.dataset["observed"],
                                          method="discrepancy_mcmc",
                                          input_names=self.input_names,
-                                         inputs_low=[0.0]*3,
-                                         inputs_high=[1.0]*3,
+                                         low=[0.0]*3,
+                                         high=[1.0]*3,
                                          proposal_sigmas=[0.2]*3,
-                                         prior=[sts.beta(2, 2).pdf]*3,
-                                         outputs=self.dataset["outputs"],
-                                         output_names=self.output_names,
-                                         quantity='x',
-                                         surrogate_model=self.surrogate_model,
-                                         observed_values=[.5]*2,
-                                         observed_std=[.1]*2,
-                                         inputs=self.input_names,
+                                         events=self.output_names,
+                                         quantities=['Y'],
+                                         surrogate_models=self.surrogate_models,
+                                         observed_std=self.observed_std,
                                          total_samples=10,
                                          burn=20,
                                          every=2,
-                                         start=start,
+                                         priors=[sts.beta(2, 2).pdf]*3,
+                                         start={name: .5 for name in self.input_names},
+                                         tau_start=[.5],
                                          prior_only=True,
-                                         seed=self.seed,
-                                         flattened=False)[:]
+                                         seed=self.seed)[:]
         chains = result.get_chains(flattened=self.flattened, scaled=self.scaled)
-        prior_expected = {'input_A': np.array([[0.46345716, 0.50974877, 0.63393836, 0.63393836, 0.71894928,
-                                                0.66062354, 0.66062354, 0.73850457, 0.73850457, 0.49556849]]),
-                          'input_B': np.array([[0.4838711 , 0.07577377, 0.06375146, 0.06375146, 0.17948177,
-                                                0.30874394, 0.30874394, 0.53893049, 0.53893049, 0.49280753]]),
-                          'input_C': np.array([[0.7840451 , 0.60787943, 0.43002658, 0.43002658, 0.27496949,
-                                                0.57189731, 0.57189731, 0.61241226, 0.61241226, 0.48048973]]),
-                          'tau_x': np.array([[0.13174745, 0.06946011, 0.09324664, 0.09324664, 0.13117427,
-                                              0.21830206, 0.21830206, 0.19166014, 0.19166014, 0.15114434]])}
+        prior_points = np.array(list(chains.values())).squeeze(axis=1).T
+        prior_expected = np.array(
+            [[0.46345716, 0.48387110, 0.78404510, 0.13174745],
+             [0.50974877, 0.07577377, 0.60787943, 0.06946011],
+             [0.63393836, 0.06375146, 0.43002658, 0.09324664],
+             [0.63393836, 0.06375146, 0.43002658, 0.09324664],
+             [0.71894928, 0.17948177, 0.27496949, 0.13117427],
+             [0.66062354, 0.30874394, 0.57189731, 0.21830206],
+             [0.66062354, 0.30874394, 0.57189731, 0.21830206],
+             [0.73850457, 0.53893049, 0.61241226, 0.19166014],
+             [0.73850457, 0.53893049, 0.61241226, 0.19166014],
+             [0.49556849, 0.49280753, 0.48048973, 0.15114434]]
+        )
 
-        result2 = kosh_operators.KoshMCMC(self.dataset["inputs"],
+        result2 = kosh_operators.KoshMCMC(self.dataset["observed"],
                                           method="discrepancy_mcmc",
                                           input_names=self.input_names,
-                                          inputs_low=[0.0]*3,
-                                          inputs_high=[1.0]*3,
+                                          low=[0.0]*3,
+                                          high=[1.0]*3,
                                           proposal_sigmas=[0.2]*3,
-                                          prior=[sts.beta(2, 2).pdf]*3,
-                                          outputs=self.dataset["outputs"],
-                                          output_names=self.output_names,
-                                          quantity='x',
-                                          surrogate_model=self.surrogate_model,
-                                          observed_values=[.5]*2,
-                                          observed_std=[.1]*2,
-                                          inputs=self.input_names,
+                                          events=self.output_names,
+                                          quantities=['Y'],
+                                          surrogate_models=self.surrogate_models,
+                                          observed_std=self.observed_std,
                                           total_samples=10,
                                           burn=20,
                                           every=2,
-                                          start=start,
+                                          priors=[sts.beta(2, 2).pdf]*3,
+                                          start={name: .5 for name in self.input_names},
+                                          tau_start=[.5],
                                           prior_only=False,
-                                          seed=self.seed,
-                                          flattened=True)[:]
+                                          seed=self.seed)[:]
         chains2 = result2.get_chains(flattened=self.flattened, scaled=self.scaled)
-        post_expected = {'input_A': np.array([[0.69888725, 0.69888725, 0.82307684, 0.92350497, 0.92350497,
-                                               0.65506841, 0.6660201 , 0.74390113, 0.74390113, 0.62464854]]),
-                         'input_B': np.array([[0.35711477, 0.35711477, 0.34509246, 0.87210644, 0.87210644,
-                                               0.78541696, 0.55307605, 0.78326259, 0.78326259, 0.59625489]]),
-                         'input_C': np.array([[0.87951977, 0.87951977, 0.70166692, 0.25238694, 0.25238694,
-                                               0.27001599, 0.50338092, 0.54389587, 0.54389587, 0.5978228 ]]),
-                         'tau_x': np.array([[0.15326688, 0.15326688, 0.17705341, 0.21268524, 0.21268524,
-                                             0.23775688, 0.29051215, 0.26387024, 0.26387024, 0.27889584]])}
+        post_points = np.array(list(chains2.values())).squeeze(axis=1).T
+        post_expected = np.array(
+            [[0.17669621, 0.23788465, 0.77980347, 0.38913610],
+             [0.17669621, 0.23788465, 0.77980347, 0.38913610],
+             [0.30088580, 0.22586234, 0.60195062, 0.41292263],
+             [0.40131393, 0.75287632, 0.15267065, 0.44855446],
+             [0.40131393, 0.75287632, 0.15267065, 0.44855446],
+             [0.34298819, 0.88213850, 0.44959846, 0.53568224],
+             [0.67718792, 0.54468051, 0.41060721, 0.46209016],
+             [0.63688562, 0.52673767, 0.38567044, 0.46018472],
+             [0.87986357, 0.25779916, 0.18284551, 0.45517887],
+             [0.63692749, 0.21167619, 0.05092299, 0.41466307]]
+        )
 
-        for name in start.keys():
-            np.testing.assert_array_almost_equal(chains[name],
-                                                 prior_expected[name])
-            np.testing.assert_array_almost_equal(chains2[name],
-                                                 post_expected[name])
+        np.testing.assert_array_almost_equal(prior_points,
+                                             prior_expected)
+        np.testing.assert_array_almost_equal(post_points,
+                                             post_expected)
 
     def test_kosh_sensitivity_plots(self):
 
