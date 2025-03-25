@@ -22,6 +22,10 @@ def test_kosh_oat_effects():
     MOAT_response = hill(*MOAT_samples.T)
 
     fileName = "mytestfile2.hdf5"
+    work_dir = os.getcwd()
+    file_path = os.path.join(work_dir, fileName)
+    if os.path.exists(file_path):
+        os.remove(file_path)
     with h5py.File(fileName, "w") as f:
         f.create_dataset("inputs", data=OAT_samples)
         f.create_dataset("outputs", data=OAT_response)

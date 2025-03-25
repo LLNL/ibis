@@ -722,6 +722,14 @@ class DiscrepancyMCMC(DefaultMCMC):
         self.tau_prior_beta = 0.0
 
     def _init_start(self, start, rng):
+        """
+            Start values for the chain. Discrepancy covariance variables are added here.
+            Tau is the discrepancy variance for each quantity of interest, and rho is the
+            correlation coefficient between the two quantities of interest.
+
+            :parameter start: The value at which to start the chain
+            :type start: dict of str, float
+        """
         quantities = []
         for output_name, output in self.outputs.items():
             if output.quantity not in quantities:
@@ -753,6 +761,15 @@ class DiscrepancyMCMC(DefaultMCMC):
         return initial
 
     def _propose(self, current_point, rng):
+        """
+            Propose a new point which is conditioned on the current point
+
+            :parameter current_point: The current point which is the pre-state for the proposed point
+            :type current_point: dict of (str, float)
+
+            :returns: A new point whose distribution depends on the given current point
+            :rtype: dict of (str, float)
+        """
         proposed_point = {
             key: rng.normal(current_point[key], self.inputs[key].proposal_sigma) if key in self.inputs else 0.0
             for key in current_point.keys()}
@@ -768,6 +785,14 @@ class DiscrepancyMCMC(DefaultMCMC):
         return proposed_point
 
     def _posterior_log_prob(self, current_point, prior_only=False):
+        """
+            Gets the log probability for a given point
+
+            :parameter current_point: The given point to get the log probability for
+            :type current_point: dict of (str, float)
+
+            :returns: The log probability of the given point
+        """
         num_outputs = len(self.outputs.keys())
         likelihood = 0.0
         tau_prob = np.zeros(self.num_quant)

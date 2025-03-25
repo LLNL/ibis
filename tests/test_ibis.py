@@ -4,7 +4,6 @@ from __future__ import absolute_import
 import os
 import sys
 import unittest
-import pytest
 import warnings
 import numpy as np
 import scipy.stats as sts
@@ -12,7 +11,6 @@ from sklearn.gaussian_process import GaussianProcessRegressor
 from ibis import mcmc
 from ibis import filter
 from ibis import likelihoods
-from ibis import sensitivity
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
 
@@ -580,7 +578,6 @@ class TestUQMethods(unittest.TestCase):
              0.02593211, 0.35998965, 0.53026133, 0.07201057, 0., 0.2386372, 0.0596916, 0.33313067,
              0.16821533, 0.26039306, 0.])
         np.testing.assert_array_almost_equal(combined_weights_expected, combined_weights_actual)
-
 
 if __name__ == '__main__':
     unittest.main()
