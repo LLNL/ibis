@@ -19,62 +19,59 @@ class KoshMCMC(KoshOperator):
         :param method: Type of MCMC sampling to use. Options are: "default_mcmc"
         and "discrepancy_mcmc".
         :type method: str
-        :param inputs: The input datasets. Kosh datasets of one or more arrays.
-        The arrays should have features as columns and observation as rows.
-        :type inputs: Kosh datasets
-        :param input_names:
-        :type input_names:
-        :param inputs_low: The lower bounds of the features in the input datasets.
-        :type inputs_low: list
-        :param inputs_high: The upper bounds of the features in the input datasets.
-        :type inputs_high: list
+        :param observed: Kosh datasets of one or more arrays of the observed quantities of
+        interest. The arrays should have measured quantity of interest as columns and observations
+        as rows.
+        :type observed: kosh datasets
+        :param input_names: The unique names of the inputs.
+        :type input_names: list
+        :param low: The lower bound of the input variables.
+        :type low: list
+        :param high: The upper bound of the input variables.
+        :type high: list
         :param proposal_sigmas: The standard deviation of the proposal distribution
         for each feature in the inputs.
-        :type proposal_sigmas: list
-        :param prior: The prior distributions of each input feature. The default is
-        None which will result in using a uniform distribution over the whole range.
-        :type prior: list of functions
-        :param unscaled_low:
-        :type unscaled_low:
-        :param unscaled_high:
-        :type unscaled_high:
-        :param scaling: The type of scaling used on inputs. 'lin' or 'log'
-        :type scaling: str
-        :param outputs: The output datasets. Kosh datasets of one or more arrays.
-        The arrays should have features as columns and observation as rows.
-        :type outputs: Kosh datasets
-        :param output_names:
-        :type output_names:
-        :param event: The event the output is associated with
-        :type event: str
-        param quantity: The physical quantity of the output
-        :type quantity: str
-        :param surrogate_model:The surrogate model that represents the mapping of input
+        :type proposal_sigmas: list of floats
+        :param surrogate_models:The surrogate models that represents the mapping of input
         values to output values. This model must be have a predict method that takes a
-        numpy array and returns a numpy array (sklearn's fit/predict paradigm).
-        :type surrogate_model: Trained model with predict method
-        :param observed_values: The observed experimental values for each predicted
-        output.
-        :type observed_values: list of floats
-        :param observed_std: The error bound on the observed experimental values for
-        each predicted output.
-        :type observed_std: list of floats
+        numpy array and returns a numpy array (sklearn's fit/predict paradigm). The order of
+        the models must match the order of the outputs.
+        :type surrogate_models: list of trained models
+        :param events: The event the output is associated with. There will be a unique
+        event name for each row of the experimental or measured data. Length should match
+        the number of rows in the outputs array.
+        :type events: list of str
+        :param quantities: The names of the quantity of interest.
+        :type quantities: list of str
+        :param observed_std: The error bound on the observed values.
+        :type observed_std: list of float
         :param total_samples: The total number of sample points to return
         :type total_samples: int
         :param burn: The number of burn-in iterations
         :type burn: int
         :param every: The rate at which to save points. Saves every Nth iteration.
         :type every: int
-        :param start: The value at which to start the chains
+        :param priors: The prior distributions of each input feature. The default is
+        None which will result in using a uniform distribution over the whole range.
+        :type priors: list of functions
+        :param unscaled_low: The minimum of the unscaled input features.
+        :type unscaled_low: list of floats
+        :param unscaled_high: The maximum of the unscaled input features.
+        :type unscaled_high: list of floats
+        :param scaling: The type of scaling used on inputs. 'lin' or 'log'
+        :type scaling: str
+        :param start: The value at which to start the chains for each input.
         :type start: dict of str, float
+        :param tau_start: The value at which to start the chains for "tau_{qoi}": the
+        discrepancy variance for each quantity of interest. If used, length should be
+        equal to the number of quantities of interest.
+        :type tau_start: list of float
         :param n_chains: The number of chains to run in parallel
         :type n_chains: int
         :param prior_only: Whether to run the chain on just the prior distributions.
         :type prior_only: bool
         :param seed: The random seed for the chains
         :type seed: int
-        :param flattened: Whether to flatten the arrays
-        :type flattened: bool
         :param scaled: Whether the inputs were scaled
         :type scaled: bool
         """
@@ -85,36 +82,39 @@ class KoshMCMC(KoshOperator):
     def operate(self, *inputs, format=None):
 
         # Read in input kosh datasets into one numpy array
-        X = inputs[0][:]
+        observed = inputs[0][:]
         for input_ in inputs[1:]:
-            X = np.append(X, input_[:], axis=0)
-        Ndim = X.shape[1]
+            observed = np.append(X, input_[:], axis=0)
+        try:
+            Nsamp, Ndim = observed.shape
+        except ValueError:
+            observed = observed.reshape(-1, 1)
+            Nsamp, Ndim = observed.shape
 
         method = self.options.get("method", "default_mcmc")
         input_names = self.options.get("input_names")
-        inputs_low = self.options.get("inputs_low")
-        inputs_high = self.options.get("inputs_high")
+        input_dim = len(input_names)
+        low = self.options.get("low")
+        high = self.options.get("high")
         proposal_sigmas = self.options.get("proposal_sigmas")
-        prior = self.options.get("prior", [sts.uniform.pdf]*Ndim)
-        unscaled_low = self.options.get("unscaled_low", None)
-        unscaled_high = self.options.get("unscaled_high", None)
-        scaling = self.options.get("scaling", None)
-        output_names = self.options.get("output_names")
-        surrogate_model = self.options.get("surrogate_model")
-        event = self.options.get("event", "NoneEvent")
-        quantity = self.options.get("quantity", "NoneQuantity")
-        observed_values = self.options.get("observed_values")
+        surrogate_models = self.options.get("surrogate_models")
+        events = self.options.get("events")
+        quantities = self.options.get("quantities")
         observed_std = self.options.get("observed_std")
         total_samples = self.options.get("total_samples")
         burn = self.options.get("burn")
         every = self.options.get("every")
+        priors = self.options.get("priors", [sts.uniform.pdf]*input_dim)
+        unscaled_low = self.options.get("unscaled_low", [None])
+        unscaled_high = self.options.get("unscaled_high", [None])
+        scaling = self.options.get("scaling", None)
         start = self.options.get("start", None)
+        tau_start = self.options.get("tau_start", None)
         n_chains = self.options.get("n_chains", -1)
         prior_only = self.options.get("prior_only", False)
         seed = self.options.get("seed", None)
-        flattened = self.options.get("flattened", False)
-        scaled = self.options.get("scaled", True)
 
+        # Verify Inputs
         if method == "default_mcmc":
             mcmc_obj = mcmc.DefaultMCMC()
         elif method == "discrepancy_mcmc":
@@ -124,25 +124,57 @@ class KoshMCMC(KoshOperator):
             msg += "from 'default_mcmc', or 'discrepancy_mcmc'."
             raise ValueError(msg)
 
+        # input_names, low, high, and proposal sigmas should have the same length
+        error_msg = f"input_names, low, high, and proposal_sigmas have different lengths!"
+        error_msg += f"\ninput_names: {len(input_names)}"
+        error_msg += f"\nlow: {len(low)}"
+        error_msg += f"\nhigh: {len(high)}"
+        error_msg += f"\nproposal_sigmas: {len(proposal_sigmas)}"
+        equal_sizes = len(input_names) == len(low) == len(high) == len(proposal_sigmas)
+        assert equal_sizes, error_msg
+
+        # Verify scaling and unscaled values are valid and correct length
+        if scaling is not None and ((unscaled_low[0] is None) or (unscaled_high[0] is None)):
+                msg = "If using scaling you must provide the unscaled low and high "
+                msg += "values for each input parameter."
+                raise ValueError(msg)
+        if scaling is not None:
+            error_msg = f"unscaled_low and unscaled high are a different length than input_names!"
+            error_msg += f"\nunscaled_low: {len(unscaled_low)}"
+            error_msg += f"\nunscaled_high: {len(unscaled_high)}"
+            error_msg += f"\ninput_names: {len(input_names)}"
+            equal_sizes = len(input_names) == len(unscaled_low) == len(unscaled_high)
+            assert equal_sizes, error_msg
+
+        # Verify output info
+        error_msg = f"Number of quantities or interest (QOI) should match the "
+        error_msg += f"number of observed_std."
+        error_msg += f"\nQOI's: {Ndim}"
+        error_msg += f"\nobserved_std: {len(observed_std)}"
+
+        for i, event_i in enumerate(events):
+            for j, qoi_j in enumerate(quantities):
+                mcmc_obj.add_output(event=event_i,
+                                    quantity=qoi_j,
+                                    surrogate_model=surrogate_models[j],
+                                    observed_value=observed[i,j],
+                                    observed_std=observed_std[j],
+                                    inputs=input_names)
         for i, name in enumerate(input_names):
-            if (isinstance(unscaled_low, list)) and (isinstance(unscaled_high, list)):
+            if (unscaled_low[0] is not None) and (unscaled_high[0] is not None):
                 unscaled_low = unscaled_low[i]
                 unscaled_high = unscaled_high[i]
             mcmc_obj.add_input(name=name,
-                               low=inputs_low[i],
-                               high=inputs_high[i],
+                               low=low[i],
+                               high=high[i],
                                proposal_sigma=proposal_sigmas[i],
-                               prior=prior[i],
+                               prior=priors[i],
                                unscaled_low=unscaled_low,
                                unscaled_high=unscaled_high,
                                scaling=scaling)
-        for i, name in enumerate(output_names):
-            mcmc_obj.add_output(event=event,
-                                quantity=quantity,
-                                surrogate_model=surrogate_model[name],
-                                observed_value=observed_values[i],
-                                observed_std=observed_std[i],
-                                inputs=input_names)
+        if tau_start is not None:
+            for i, name in enumerate(quantities):
+                start[f'tau_{name}'] = tau_start[i]
         mcmc_obj.run_chain(total=total_samples,
                            burn=burn,
                            every=every,
@@ -338,12 +370,12 @@ class KoshSensitivityPlots(KoshOperator):
             sensitivity.pce_rank_plot(ax, X, Y, input_names, output_names, input_ranges,
                                       degree=degree, model_degrees=model_degrees)
         elif method == "f_score_network":
-            fig, ax = plt.subplots((degree-1), len(output_names))
+            fig, ax = plt.subplots(len(output_names), (degree-1))
             sensitivity.f_score_network_plot(ax, X, Y, input_names, output_names,
                                              degree=degree, max_size=max_size,
                                              label_size=label_size, alpha=alpha)
         elif method == "pce_network":
-            fig, ax = plt.subplots((degree-1), len(output_names))
+            fig, ax = plt.subplots(len(output_names), (degree-1))
             sensitivity.pce_network_plot(ax, X, Y, input_names, output_names,
                                          input_ranges, degree=degree,
                                          model_degrees=model_degrees, max_size=max_size,

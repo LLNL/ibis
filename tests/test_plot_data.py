@@ -13,7 +13,6 @@ import numpy as np
 import scipy.stats as sts
 from sklearn.gaussian_process import GaussianProcessRegressor as gpr
 
-from ibis import sensitivity
 from ibis import plots
 
 class TestPlotData(unittest.TestCase):
