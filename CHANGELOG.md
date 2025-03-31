@@ -1,9 +1,23 @@
-# 1.1.0
-
 # Release Notes
 
+* [1.1.1](#111-release)
 * [1.1.0](#110-release)
 
+
+## 1.1.1 Release
+
+This release includes some bug fixes and an update to the basic descriptions.
+
+### Improvements
+
+* Updated descriptions for the main modules
+* More explanation for descrepancy MCMC sampling
+
+### Bug fixes
+
+* KoshMCMC function only has experimental data coming from a Kosh store.
+* Fixed loop to allow for any number of quantity of interest and experiments in the KoshMCMC function.
+* Allow for the case of only one QOI in the sensitivity plot, variance_network_plot, and rank plot.
 
 ## 1.1.0 Release
 
