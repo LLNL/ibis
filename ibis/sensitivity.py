@@ -654,6 +654,52 @@ def sobol_indices(feature_data, response_data, include_second_order=False, **kwa
     else:
         return S_i, S_Ti
 
+def oat_score_function(feature_data, response_data, method='morris', statistic='mu_star', **kwargs):
+    """
+    Score function that works with both Morris and One-at-a-Time methods.
+    
+    Args:
+        feature_data: Array of input samples
+        response_data: Array of model outputs  
+        method: 'morris' or 'oat' (one-at-a-time)
+        statistic: For Morris: 'mu_star', 'sigma', 'mu'. For OAT: 'mean', 'std', 'max', 'min'
+        **kwargs: Additional arguments passed to the underlying functions
+        
+    Returns:
+        Array of scores for each parameter
+    """
+    # Filter out 'powers' argument since Morris/OAT don't use it
+    filtered_kwargs = {k: v for k, v in kwargs.items() if k != 'powers'}
+
+    if method.lower() == 'morris':
+        results = morris_effects(feature_data, response_data, **kwargs)
+        if statistic == 'mu_star':
+            return results['mu_star']
+        elif statistic == 'sigma':
+            return results['sigma']
+        elif statistic == 'mu':
+            return results['mu']
+        else:
+            raise ValueError(f"Unknown Morris statistic: {statistic}")
+            
+    elif method.lower() in ['oat', 'one_at_a_time']:
+        effects = one_at_a_time_effects(feature_data, response_data)  # Shape: (p, 2)
+        if statistic == 'mean':
+            return np.mean(effects, axis=1)
+        elif statistic == 'std':
+            return np.std(effects, axis=1, ddof=1)
+        elif statistic == 'max':
+            return np.max(np.abs(effects), axis=1)  # Max absolute effect
+        elif statistic == 'min':
+            return np.min(np.abs(effects), axis=1)  # Min absolute effect
+        elif statistic == 'range':
+            return np.ptp(effects, axis=1)  # Peak-to-peak (range)
+        else:
+            raise ValueError(f"Unknown OAT statistic: {statistic}")
+    else:
+        raise ValueError(f"Unknown method: {method}")
+
+
 def morris_score_plot(ax, feature_data, response_data, feature_names, response_names, 
                       statistic='mu_star', degree=1, interaction_only=True):
     """
