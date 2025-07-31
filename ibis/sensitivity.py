@@ -75,7 +75,7 @@ def _variance_network_plot(ax,
 
     # Reshape axis for case with one output gives a 1D array; force to 2D
     if len(ax.shape) == 1:
-        ax = ax.reshape(-1,1)
+        ax = ax.reshape(-1, 1)
 
     for response_column_data, response_column_name, plot_column in zip(response_data.T,
                                                                        response_names, ax.T):
@@ -563,13 +563,13 @@ def morris_effects(feature_data, response_data, tol=1e-12):
         return val
 
     elementary_effects = np.array([make_effect(_x, _y) for _x, _y in zip(feature_data.reshape(r, k + 1, k),
-                                                                    response_data.reshape(r, k + 1))])
+                                                                         response_data.reshape(r, k + 1))])
 
     # Calculate Morris statistics
     mu = np.mean(elementary_effects, axis=0)
     mu_star = np.mean(np.abs(elementary_effects), axis=0)
     sigma = np.std(elementary_effects, axis=0, ddof=1)
-    
+
     return {
         'mu': mu,
         'mu_star': mu_star,
@@ -654,17 +654,18 @@ def sobol_indices(feature_data, response_data, include_second_order=False, **kwa
     else:
         return S_i, S_Ti
 
+
 def oat_score_function(feature_data, response_data, method='morris', statistic='mu_star', **kwargs):
     """
     Score function that works with both Morris and One-at-a-Time methods.
-    
+
     Args:
         feature_data: Array of input samples
-        response_data: Array of model outputs  
+        response_data: Array of model outputs
         method: 'morris' or 'oat' (one-at-a-time)
         statistic: For Morris: 'mu_star', 'sigma', 'mu'. For OAT: 'mean', 'std', 'max', 'min'
         **kwargs: Additional arguments passed to the underlying functions
-        
+
     Returns:
         Array of scores for each parameter
     """
@@ -672,7 +673,7 @@ def oat_score_function(feature_data, response_data, method='morris', statistic='
     filtered_kwargs = {k: v for k, v in kwargs.items() if k != 'powers'}
 
     if method.lower() == 'morris':
-        results = morris_effects(feature_data, response_data, **kwargs)
+        results = morris_effects(feature_data, response_data, **filtered_kwargs)
         if statistic == 'mu_star':
             return results['mu_star']
         elif statistic == 'sigma':
@@ -681,7 +682,7 @@ def oat_score_function(feature_data, response_data, method='morris', statistic='
             return results['mu']
         else:
             raise ValueError(f"Unknown Morris statistic: {statistic}")
-            
+
     elif method.lower() in ['oat', 'one_at_a_time']:
         effects = one_at_a_time_effects(feature_data, response_data)  # Shape: (p, 2)
         if statistic == 'mean':
@@ -700,11 +701,11 @@ def oat_score_function(feature_data, response_data, method='morris', statistic='
         raise ValueError(f"Unknown method: {method}")
 
 
-def morris_score_plot(ax, feature_data, response_data, feature_names, response_names, 
+def morris_score_plot(ax, feature_data, response_data, feature_names, response_names,
                       statistic='mu_star', degree=1, interaction_only=True):
     """
     Plots Morris score plot
-    
+
     Args:
         - ax ([matplotlib.Axes]): Array-like of Axes to plot to
         - feature_data ([[float]]): Array-like of feature data
@@ -715,10 +716,12 @@ def morris_score_plot(ax, feature_data, response_data, feature_names, response_n
         - degree (int): Maximum degree of interaction
         - interaction_only (bool): Whether to only include lowest powers of interaction
     """
-    score_func = lambda fd, rd, **kwargs: oat_score_function(fd, rd, 'morris', statistic, **kwargs)
+    def score_func(fd, rd, **kwargs):
+        return oat_score_function(fd, rd, 'morris', statistic, **kwargs)
+
     title = f'Morris {statistic.replace("_", " ").title()}'
     y_label = f'{statistic} Score'
-    
+
     _score_plot(ax=ax,
                 feature_data=feature_data,
                 response_data=response_data,
@@ -735,7 +738,7 @@ def morris_rank_plot(ax, feature_data, response_data, feature_names, response_na
                      statistic='mu_star', degree=1, interaction_only=True):
     """
     Plots Morris rank plot
-    
+
     Args:
         - ax (matplotlib.Axes): Axes to plot to
         - feature_data ([[float]]): Array-like of feature data
@@ -746,8 +749,9 @@ def morris_rank_plot(ax, feature_data, response_data, feature_names, response_na
         - degree (int): Maximum degree of interaction
         - interaction_only (bool): Whether to only include lowest powers of interaction
     """
-    score_func = lambda fd, rd, **kwargs: oat_score_function(fd, rd, 'morris', statistic, **kwargs)
-    
+    def score_func(fd, rd, **kwargs):
+        return oat_score_function(fd, rd, 'morris', statistic, **kwargs)
+
     _rank_plot(ax=ax,
                feature_data=feature_data,
                response_data=response_data,
@@ -762,7 +766,7 @@ def oat_score_plot(ax, feature_data, response_data, feature_names, response_name
                    statistic='max', degree=1, interaction_only=True):
     """
     Plots One-at-a-Time score plot
-    
+
     Args:
         - ax ([matplotlib.Axes]): Array-like of Axes to plot to
         - feature_data ([[float]]): Array-like of feature data
@@ -773,10 +777,12 @@ def oat_score_plot(ax, feature_data, response_data, feature_names, response_name
         - degree (int): Maximum degree of interaction
         - interaction_only (bool): Whether to only include lowest powers of interaction
     """
-    score_func = lambda fd, rd, **kwargs: oat_score_function(fd, rd, 'oat', statistic, **kwargs)
+    def score_func(fd, rd, **kwargs):
+        return oat_score_function(fd, rd, 'oat', statistic, **kwargs)
+
     title = f'OAT {statistic.title()} Effects'
     y_label = f'{statistic} Effect'
-    
+
     _score_plot(ax=ax,
                 feature_data=feature_data,
                 response_data=response_data,
@@ -793,7 +799,7 @@ def oat_rank_plot(ax, feature_data, response_data, feature_names, response_names
                   statistic='max', degree=1, interaction_only=True):
     """
     Plots One-at-a-Time rank plot
-    
+
     Args:
         - ax (matplotlib.Axes): Axes to plot to
         - feature_data ([[float]]): Array-like of feature data
@@ -804,8 +810,9 @@ def oat_rank_plot(ax, feature_data, response_data, feature_names, response_names
         - degree (int): Maximum degree of interaction
         - interaction_only (bool): Whether to only include lowest powers of interaction
     """
-    score_func = lambda fd, rd, **kwargs: oat_score_function(fd, rd, 'oat', statistic, **kwargs)
-    
+    def score_func(fd, rd, **kwargs):
+        return oat_score_function(fd, rd, 'oat', statistic, **kwargs)
+
     _rank_plot(ax=ax,
                feature_data=feature_data,
                response_data=response_data,
@@ -820,7 +827,7 @@ def sobol_score_plot(ax, feature_data, response_data, feature_names, response_na
                      index_type='first_order', include_second_order=False):
     """
     Plots Sobol indices score plot
-    
+
     Args:
         - ax ([matplotlib.Axes]): Array-like of Axes to plot to
         - feature_data ([[float]]): Array-like of feature data
@@ -835,17 +842,17 @@ def sobol_score_plot(ax, feature_data, response_data, feature_names, response_na
             S_i, S_Ti, S_ij = sobol_indices(fd, rd, include_second_order=True, **kwargs)
         else:
             S_i, S_Ti = sobol_indices(fd, rd, include_second_order=False, **kwargs)
-        
+
         if index_type == 'first_order':
             return S_i
         elif index_type == 'total_order':
             return S_Ti
         else:
             raise ValueError(f"Unknown index_type: {index_type}")
-    
+
     title = f'Sobol {index_type.replace("_", " ").title()} Indices'
     y_label = f'{index_type.replace("_", " ").title()} Index'
-    
+
     _score_plot(ax=ax,
                 feature_data=feature_data,
                 response_data=response_data,
@@ -863,7 +870,7 @@ def sobol_rank_plot(ax, feature_data, response_data, feature_names, response_nam
                     index_type='first_order', include_second_order=False):
     """
     Plots Sobol indices rank plot
-    
+
     Args:
         - ax (matplotlib.Axes): Axes to plot to
         - feature_data ([[float]]): Array-like of feature data
@@ -878,14 +885,14 @@ def sobol_rank_plot(ax, feature_data, response_data, feature_names, response_nam
             S_i, S_Ti, S_ij = sobol_indices(fd, rd, include_second_order=True, **kwargs)
         else:
             S_i, S_Ti = sobol_indices(fd, rd, include_second_order=False, **kwargs)
-        
+
         if index_type == 'first_order':
             return S_i
         elif index_type == 'total_order':
             return S_Ti
         else:
             raise ValueError(f"Unknown index_type: {index_type}")
-    
+
     _rank_plot(ax=ax,
                feature_data=feature_data,
                response_data=response_data,
