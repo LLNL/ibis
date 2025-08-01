@@ -705,7 +705,7 @@ def morris_score_plot(ax, feature_data, response_data, feature_names, response_n
                       show_both=True, degree=1, interaction_only=True):
     """
     Plots Morris score plot showing mu_star and optionally sigma
-    
+
     Args:
         - ax ([matplotlib.Axes]): Array-like of Axes to plot to
         - feature_data ([[float]]): Array-like of feature data
@@ -719,34 +719,34 @@ def morris_score_plot(ax, feature_data, response_data, feature_names, response_n
     # Morris only works with original parameters (degree=1)
     if degree > 1:
         raise ValueError("Morris method only works with degree=1 (no polynomial interactions)")
-    
+
     # Convert to numpy arrays and handle 1D response data
     feature_data = np.asarray(feature_data)
     response_data = np.asarray(response_data)
     if response_data.ndim == 1:
         response_data = response_data.reshape(-1, 1)
-    
+
     # Calculate Morris statistics
     results = morris_effects(feature_data, response_data.squeeze())
     mu_star = results['mu_star']
     sigma = results['sigma']
-    
+
     # Create the plot
     for y_col, y_name, axes in zip(response_data.T, response_names, ax):
         if show_both:
             x = np.arange(len(feature_names))
             width = 0.35
-            
+
             bars1 = axes.bar(x - width/2, mu_star, width, label='μ* (Overall Effect)', alpha=0.8)
             bars2 = axes.bar(x + width/2, sigma, width, label='σ (Interactions)', alpha=0.8)
-            
+
             axes.set_xlabel('Parameter')
             axes.set_ylabel('Morris Score')
             axes.set_title(f'Morris Sensitivity Analysis ({y_name})')
             axes.set_xticks(x)
             axes.set_xticklabels(feature_names, rotation=70)
             axes.legend()
-            
+
             # Add value labels on bars
             for bar in bars1:
                 height = bar.get_height()
@@ -762,18 +762,19 @@ def morris_score_plot(ax, feature_data, response_data, feature_names, response_n
             axes.set_xlabel('Parameter')
             axes.set_ylabel('μ* Score')
             axes.set_title(f'Morris μ* (Overall Sensitivity) ({y_name})')
-            
+
             # Add value labels
             for bar in bars:
                 height = bar.get_height()
                 axes.text(bar.get_x() + bar.get_width()/2., height,
                          f'{height:.3f}', ha='center', va='bottom', fontsize=9)
 
+
 def morris_rank_plot(ax, feature_data, response_data, feature_names, response_names,
                      rank_by='mu_star', show_both=False, degree=1, interaction_only=True):
     """
     Plots Morris rank plot
-    
+
     Args:
         - ax (matplotlib.Axes): Axes to plot to
         - feature_data ([[float]]): Array-like of feature data
@@ -788,13 +789,13 @@ def morris_rank_plot(ax, feature_data, response_data, feature_names, response_na
     # Morris only works with original parameters (degree=1)
     if degree > 1:
         raise ValueError("Morris method only works with degree=1 (no polynomial interactions)")
-    
+
     # Convert to numpy arrays and handle 1D response data
     feature_data = np.asarray(feature_data)
     response_data = np.asarray(response_data)
     if response_data.ndim == 1:
         response_data = response_data.reshape(-1, 1)
-    
+
     # Calculate Morris statistics for all responses
     all_mu_star = []
     all_sigma = []
@@ -802,10 +803,10 @@ def morris_rank_plot(ax, feature_data, response_data, feature_names, response_na
         results = morris_effects(feature_data, y_col)
         all_mu_star.append(results['mu_star'])
         all_sigma.append(results['sigma'])
-    
+
     mu_star_scores = np.array(all_mu_star)
     sigma_scores = np.array(all_sigma)
-    
+
     if show_both:
         # Show both statistics - extend feature names and scores
         extended_feature_names = [f"{name} (μ*)" for name in feature_names] + [f"{name} (σ)" for name in feature_names]
@@ -816,21 +817,25 @@ def morris_rank_plot(ax, feature_data, response_data, feature_names, response_na
         scores = mu_star_scores if rank_by == 'mu_star' else sigma_scores
         extended_feature_names = feature_names
         num_features = len(feature_names)
-    
+
     num_responses = len(response_names)
-    
+
     # Create rank plot manually
     order = np.argsort(-scores)
     rank_table = np.argsort(order)
 
     divider = make_axes_locatable(ax)
     cax = divider.append_axes('right', size='5%', pad=0.05)
-    color_mesh = ax.pcolormesh(num_features - rank_table.T, edgecolors='None', lw=0.0, cmap=cm.plasma)
+
+    # Fix: Use proper range for colorbar
+    color_mesh = ax.pcolormesh(num_features - rank_table.T, edgecolors='None', lw=0.0, cmap=cm.plasma,
+                               vmin=0, vmax=num_features)
 
     ax.hlines(np.arange(1, num_features + 1), 0, num_responses, color='k')
     ax.vlines(np.arange(1, num_responses + 1), 0, num_features, color='k')
 
-    cbar = plt.colorbar(color_mesh, cax=cax, orientation='vertical', values=np.arange(num_features) + 1)
+    # Fix: Remove problematic values parameter
+    cbar = plt.colorbar(color_mesh, cax=cax, orientation='vertical')
 
     for i in range(num_responses * num_features):
         idx = np.unravel_index(i, (num_responses, num_features))
@@ -871,22 +876,39 @@ def oat_score_plot(ax, feature_data, response_data, feature_names, response_name
         - degree (int): Maximum degree of interaction
         - interaction_only (bool): Whether to only include lowest powers of interaction
     """
-    def score_func(fd, rd, **kwargs):
-        return oat_score_function(fd, rd, 'oat', statistic, **kwargs)
+    # Convert to numpy arrays and handle 1D response data
+    feature_data = np.asarray(feature_data)
+    response_data = np.asarray(response_data)
+    if response_data.ndim == 1:
+        response_data = response_data.reshape(-1, 1)
+
+    # Calculate OAT effects
+    effects = one_at_a_time_effects(feature_data, response_data.squeeze())
+
+    # Calculate the requested statistic
+    if statistic == 'mean':
+        scores = np.mean(effects, axis=1)
+    elif statistic == 'std':
+        scores = np.std(effects, axis=1, ddof=1)
+    elif statistic == 'max':
+        scores = np.max(np.abs(effects), axis=1)
+    elif statistic == 'min':
+        scores = np.min(np.abs(effects), axis=1)
+    elif statistic == 'range':
+        scores = np.ptp(effects, axis=1)
+    else:
+        raise ValueError(f"Unknown OAT statistic: {statistic}")
 
     title = f'OAT {statistic.title()} Effects'
     y_label = f'{statistic} Effect'
 
-    _score_plot(ax=ax,
-                feature_data=feature_data,
-                response_data=response_data,
-                feature_names=feature_names,
-                response_names=response_names,
-                score_function=score_func,
-                title=title,
-                degree=degree,
-                interaction_only=interaction_only,
-                y_axis_label=y_label)
+    # Create the plot directly
+    for y_col, y_name, axes in zip(response_data.T, response_names, ax):
+        axes.bar(feature_names, scores)
+        axes.tick_params(axis='x', labelrotation=70)
+        axes.set_xlabel('Parameter')
+        axes.set_ylabel(y_label)
+        axes.set_title('{} ({})'.format(title, y_name))
 
 
 def oat_rank_plot(ax, feature_data, response_data, feature_names, response_names,
@@ -904,17 +926,71 @@ def oat_rank_plot(ax, feature_data, response_data, feature_names, response_names
         - degree (int): Maximum degree of interaction
         - interaction_only (bool): Whether to only include lowest powers of interaction
     """
-    def score_func(fd, rd, **kwargs):
-        return oat_score_function(fd, rd, 'oat', statistic, **kwargs)
+    # Convert to numpy arrays and handle 1D response data
+    feature_data = np.asarray(feature_data)
+    response_data = np.asarray(response_data)
+    if response_data.ndim == 1:
+        response_data = response_data.reshape(-1, 1)
 
-    _rank_plot(ax=ax,
-               feature_data=feature_data,
-               response_data=response_data,
-               feature_names=feature_names,
-               response_names=response_names,
-               score_function=score_func,
-               degree=degree,
-               interaction_only=interaction_only)
+    # Calculate OAT statistics for all responses
+    all_scores = []
+    for y_col in response_data.T:
+        effects = one_at_a_time_effects(feature_data, y_col)
+
+        if statistic == 'mean':
+            scores = np.mean(effects, axis=1)
+        elif statistic == 'std':
+            scores = np.std(effects, axis=1, ddof=1)
+        elif statistic == 'max':
+            scores = np.max(np.abs(effects), axis=1)
+        elif statistic == 'min':
+            scores = np.min(np.abs(effects), axis=1)
+        elif statistic == 'range':
+            scores = np.ptp(effects, axis=1)
+        else:
+            raise ValueError(f"Unknown OAT statistic: {statistic}")
+
+        all_scores.append(scores)
+
+    scores = np.array(all_scores)
+    num_features = len(feature_names)
+    num_responses = len(response_names)
+
+    # Create rank plot manually
+    order = np.argsort(-scores)
+    rank_table = np.argsort(order)
+
+    divider = make_axes_locatable(ax)
+    cax = divider.append_axes('right', size='5%', pad=0.05)
+    color_mesh = ax.pcolormesh(num_features - rank_table.T, edgecolors='None', lw=0.0, cmap=cm.plasma)
+
+    ax.hlines(np.arange(1, num_features + 1), 0, num_responses, color='k')
+    ax.vlines(np.arange(1, num_responses + 1), 0, num_features, color='k')
+
+    cbar = plt.colorbar(color_mesh, cax=cax, orientation='vertical', values=np.arange(num_features) + 1)
+
+    for i in range(num_responses * num_features):
+        idx = np.unravel_index(i, (num_responses, num_features))
+        ax.text(idx[0] + .5, idx[1] + .5, rank_table[idx] + 1, ha='center', va='center')
+
+    ax.set_xticks(np.arange(num_responses) + 0.5)
+    ax.set_xticklabels(response_names, rotation=35, ha='right')
+    ax.set_xlabel('Outputs', ha='center')
+
+    ax.set_yticks(np.arange(num_features) + 0.5)
+    ax.set_yticklabels(feature_names)
+    ax.set_ylabel('Parameters')
+
+    cbar_labels = np.arange(1, num_features + 1).astype('str')
+    cbar_labels[-1] += ' (Least Sensitive)'
+    cbar_labels[0] += ' (Most Sensitive)'
+
+    cbar.set_ticks(num_features - np.arange(num_features))
+    cbar.set_ticklabels(cbar_labels)
+
+    ax.set_xlim([0, num_responses])
+    ax.set_ylim([0, num_features])
+    ax.invert_yaxis()
 
 
 def sobol_score_plot(ax, feature_data, response_data, feature_names, response_names,
@@ -931,33 +1007,35 @@ def sobol_score_plot(ax, feature_data, response_data, feature_names, response_na
         - index_type (string): 'first_order' or 'total_order'
         - include_second_order (bool): Whether to calculate second-order indices
     """
-    def sobol_score_func(fd, rd, **kwargs):
-        if include_second_order:
-            S_i, S_Ti, S_ij = sobol_indices(fd, rd, include_second_order=True, **kwargs)
-        else:
-            S_i, S_Ti = sobol_indices(fd, rd, include_second_order=False, **kwargs)
+    # Convert to numpy arrays and handle 1D response data
+    feature_data = np.asarray(feature_data)
+    response_data = np.asarray(response_data)
+    if response_data.ndim == 1:
+        response_data = response_data.reshape(-1, 1)
 
-        if index_type == 'first_order':
-            return S_i
-        elif index_type == 'total_order':
-            return S_Ti
-        else:
-            raise ValueError(f"Unknown index_type: {index_type}")
+    # Calculate Sobol indices
+    if include_second_order:
+        S_i, S_Ti, S_ij = sobol_indices(feature_data, response_data, include_second_order=True)
+    else:
+        S_i, S_Ti = sobol_indices(feature_data, response_data, include_second_order=False)
+
+    if index_type == 'first_order':
+        scores = S_i
+    elif index_type == 'total_order':
+        scores = S_Ti
+    else:
+        raise ValueError(f"Unknown index_type: {index_type}")
 
     title = f'Sobol {index_type.replace("_", " ").title()} Indices'
     y_label = f'{index_type.replace("_", " ").title()} Index'
 
-    _score_plot(ax=ax,
-                feature_data=feature_data,
-                response_data=response_data,
-                feature_names=feature_names,
-                response_names=response_names,
-                score_function=sobol_score_func,
-                title=title,
-                degree=1,
-                interaction_only=False,
-                y_axis_label=y_label,
-                include_second_order=include_second_order)
+    # Create the plot directly
+    for y_col, y_name, axes in zip(response_data.T, response_names, ax):
+        axes.bar(feature_names, scores)
+        axes.tick_params(axis='x', labelrotation=70)
+        axes.set_xlabel('Parameter')
+        axes.set_ylabel(y_label)
+        axes.set_title('{} ({})'.format(title, y_name))
 
 
 def sobol_rank_plot(ax, feature_data, response_data, feature_names, response_names,
@@ -974,28 +1052,70 @@ def sobol_rank_plot(ax, feature_data, response_data, feature_names, response_nam
         - index_type (string): 'first_order' or 'total_order'
         - include_second_order (bool): Whether to calculate second-order indices
     """
-    def sobol_score_func(fd, rd, **kwargs):
+    # Convert to numpy arrays and handle 1D response data
+    feature_data = np.asarray(feature_data)
+    response_data = np.asarray(response_data)
+    if response_data.ndim == 1:
+        response_data = response_data.reshape(-1, 1)
+
+    # Calculate Sobol indices for all responses
+    all_scores = []
+    for y_col in response_data.T:
+        y_col_2d = y_col.reshape(-1, 1)  # Sobol expects 2D
+
         if include_second_order:
-            S_i, S_Ti, S_ij = sobol_indices(fd, rd, include_second_order=True, **kwargs)
+            S_i, S_Ti, S_ij = sobol_indices(feature_data, y_col_2d, include_second_order=True)
         else:
-            S_i, S_Ti = sobol_indices(fd, rd, include_second_order=False, **kwargs)
+            S_i, S_Ti = sobol_indices(feature_data, y_col_2d, include_second_order=False)
 
         if index_type == 'first_order':
-            return S_i
+            scores = S_i
         elif index_type == 'total_order':
-            return S_Ti
+            scores = S_Ti
         else:
             raise ValueError(f"Unknown index_type: {index_type}")
 
-    _rank_plot(ax=ax,
-               feature_data=feature_data,
-               response_data=response_data,
-               feature_names=feature_names,
-               response_names=response_names,
-               score_function=sobol_score_func,
-               degree=1,
-               interaction_only=False,
-               include_second_order=include_second_order)
+        all_scores.append(scores)
+
+    scores = np.array(all_scores)
+    num_features = len(feature_names)
+    num_responses = len(response_names)
+    
+    # Create rank plot manually
+    order = np.argsort(-scores)
+    rank_table = np.argsort(order)
+
+    divider = make_axes_locatable(ax)
+    cax = divider.append_axes('right', size='5%', pad=0.05)
+    color_mesh = ax.pcolormesh(num_features - rank_table.T, edgecolors='None', lw=0.0, cmap=cm.plasma)
+
+    ax.hlines(np.arange(1, num_features + 1), 0, num_responses, color='k')
+    ax.vlines(np.arange(1, num_responses + 1), 0, num_features, color='k')
+
+    cbar = plt.colorbar(color_mesh, cax=cax, orientation='vertical', values=np.arange(num_features) + 1)
+
+    for i in range(num_responses * num_features):
+        idx = np.unravel_index(i, (num_responses, num_features))
+        ax.text(idx[0] + .5, idx[1] + .5, rank_table[idx] + 1, ha='center', va='center')
+
+    ax.set_xticks(np.arange(num_responses) + 0.5)
+    ax.set_xticklabels(response_names, rotation=35, ha='right')
+    ax.set_xlabel('Outputs', ha='center')
+
+    ax.set_yticks(np.arange(num_features) + 0.5)
+    ax.set_yticklabels(feature_names)
+    ax.set_ylabel('Parameters')
+
+    cbar_labels = np.arange(1, num_features + 1).astype('str')
+    cbar_labels[-1] += ' (Least Sensitive)'
+    cbar_labels[0] += ' (Most Sensitive)'
+
+    cbar.set_ticks(num_features - np.arange(num_features))
+    cbar.set_ticklabels(cbar_labels)
+
+    ax.set_xlim([0, num_responses])
+    ax.set_ylim([0, num_features])
+    ax.invert_yaxis()
 
 
 def lasso_path_plot(ax, feature_data, response_data, feature_names, response_names,
