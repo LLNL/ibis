@@ -30,39 +30,38 @@ def _variance_network_plot(ax,
                            label_size=12,
                            **kwargs):
     """
+    Create a set of network plots based on a given set of data and score function
+    for each combination of output and degree.
 
-        Create a set of network plots based on a given set of data and score function
-        for each combination of output and degree.
+    Network plots compare scores between different degree of interaction.
+    In all plots, each parameter by itself is represented as a node in a graph.
+    For plots of degree 2, interactions between 2 parameters are represented
+    as an edge between the respective nodes.
+    For plots of degree 3 or higher, interactions between the respective parameters
+    are represented as a hyper edge i.e. an edge between 3 or more nodes.
+    The sizes and thicknesses of the nodes and edges correspond to the scores from the
+    given score function.
 
-        Network plots compare scores between different degree of interaction.
-        In all plots, each parameter by itself is represented as a node in a graph.
-        For plots of degree 2, interactions between 2 parameters are represented
-        as an edge between the respective nodes.
-        For plots of degree 3 or higher, interactions between the respective parameters
-        are represented as a hyper edge i.e. an edge between 3 or more nodes.
-        The sizes and thicknesses of the nodes and edges correspond to the scores from the
-        given score function.
+    Args:
+        - ax ([[matplotlib.Axes]]): Array-like of Axes to plot to. Dimension is number of
+          outputs by (degree-1)
+        - feature_data ([[float]]): Array-like of feature data. Each column is a feature;
+          each row is an observation
+        - response_data ([[float]]): Array-like of response data. Rows correspond to rows
+          in feature data.
+        - feature_names ([string]): Array-like of feature names
+        - response_names ([string]): Array-like of response names
+        - score_function (function): Function which scores features based on importance to
+          responses.
+        - method_label (string): Label of method used
+        - degree: maximum degree of interactions to plot
+        - max_size (float): Maximum size of elements in plot. Measured in points
+        - alpha (float): Opacity of elements in plot.
+        - label_size (int): Font size of labels. Measured in points
+        - kwargs: Keyword arguments to be passed to score_function
 
-        Args:
-            - ax ([[matplotlib.Axes]]): Array-like of Axes to plot to. Dimension is number of
-              outputs by (degree-1)
-            - feature_data ([[float]]): Array-like of feature data. Each column is a feature;
-              each row is an observation
-            - response_data ([[float]]): Array-like of response data. Rows correspond to rows
-              in feature data.
-            - feature_names ([string]): Array-like of feature names
-            - response_names ([string]): Array-like of response names
-            - score_function (function): Function which scores features based on importance to
-              responses.
-            - method_label (string): Label of method used
-            - degree: maximum degree of interactions to plot
-            - max_size (float): Maximum size of elements in plot. Measured in points
-            - alpha (float): Opacity of elements in plot.
-            - label_size (int): Font size of labels. Measured in points
-            - kwargs: Keyword arguments to be passed to score_function
-
-        Raises:
-            -
+    Raises:
+        -
     """
     assert degree >= 2
 
@@ -187,34 +186,32 @@ def _variance_network_plot(ax,
 def _rank_plot(ax, feature_data, response_data, feature_names, response_names, score_function,
                degree=1, interaction_only=True, **kwargs):
     """
-        Create a rank plot based on a given set of data and score function.
+    Create a rank plot based on a given set of data and score function.
 
-        Ranks each feature from 1 to N based on the result of score_function.
-        A grid of boxes are plotted with response names on the x-axis
-        and feature names (and possibly interactions) on the y-axis.
-        Each box is colored and labeled according to its calculated rank.
-        Ranks are only calculated within responses, not across responses.
+    Ranks each feature from 1 to N based on the result of score_function.
+    A grid of boxes are plotted with response names on the x-axis
+    and feature names (and possibly interactions) on the y-axis.
+    Each box is colored and labeled according to its calculated rank.
+    Ranks are only calculated within responses, not across responses.
 
-        Args:
-            - ax (matplotlib.Axes): Axes to plot to
-            - feature_data ([[float]]): Array-like of feature data. Each column
-              is a feature; each row is an observation.
-            - response_data ([[float]]): Array-like of response data. Rows correspond
-              to rows in feature data.
-            - feature_names ([string]): Array-like of feature names
-            - response_names ([string]): Array-like of response names
-            - score_function (function): Function which scores features based on
-              importance to responses.
-            - degree (int): Maximum degree of interaction
-            - interaction_only (bool): Whether to only include lowest powers of
-              interaction or include higher powers.
-            - kwargs: Keyword arguments passed to score_function
+    Args:
+        - ax (matplotlib.Axes): Axes to plot to
+        - feature_data ([[float]]): Array-like of feature data. Each column
+          is a feature; each row is an observation.
+        - response_data ([[float]]): Array-like of response data. Rows correspond
+          to rows in feature data.
+        - feature_names ([string]): Array-like of feature names
+        - response_names ([string]): Array-like of response names
+        - score_function (function): Function which scores features based on
+          importance to responses.
+        - degree (int): Maximum degree of interaction
+        - interaction_only (bool): Whether to only include lowest powers of
+          interaction or include higher powers.
+        - kwargs: Keyword arguments passed to score_function
 
-        Raises:
-            -
-
+    Raises:
+        -
     """
-
     feature_interaction_data, feature_interaction_names, powers = \
         _make_interactions(feature_data, feature_names, degree=degree, interaction_only=interaction_only)
 
@@ -270,34 +267,32 @@ def _rank_plot(ax, feature_data, response_data, feature_names, response_names, s
 def _score_plot(ax, feature_data, response_data, feature_names, response_names, score_function, title,
                 degree=1, interaction_only=True, y_axis_label='Score', **kwargs):
     """
-        Create a set of bar plots based on a given set of data and score function for each output.
+    Create a set of bar plots based on a given set of data and score function for each output.
 
-        Uses score_function to assign a score to each feature or interaction of features.
-        These scores are then plotted as a bar plot, with the height of each bar corresponding to
-        the calculated score.
+    Uses score_function to assign a score to each feature or interaction of features.
+    These scores are then plotted as a bar plot, with the height of each bar corresponding to
+    the calculated score.
 
+    Args:
+        - ax ([matplotlib.Axes]): Array-like of Axes to plot to
+        - feature_data ([[float]]): Array-like of feature data. Each column is a feature;
+          each row is an observation.
+        - response_data ([[float]]): Array-like of response data. Rows correspond to rows
+          in feature data.
+        - feature_names ([string]): Array-like of feature names
+        - response_names ([string]): Array-like of response names
+        - score_function (function): Function which scores features based on importance to
+          responses.
+        - title (string): Title of plot
+        - degree (int): Maximum degree of interaction
+        - interaction_only (bool): Whether to only include lowest powers of interaction or
+          include higher powers.
+        - y_axis_label (string): Y axis label
+        - kwargs: Keyword arguments passed to score_function
 
-        Args:
-            - ax ([matplotlib.Axes]): Array-like of Axes to plot to
-            - feature_data ([[float]]): Array-like of feature data. Each column is a feature;
-              each row is an observation.
-            - response_data ([[float]]): Array-like of response data. Rows correspond to rows
-              in feature data.
-            - feature_names ([string]): Array-like of feature names
-            - response_names ([string]): Array-like of response names
-            - score_function (function): Function which scores features based on importance to
-              responses.
-            - title (string): Title of plot
-            - degree (int): Maximum degree of interaction
-            - interaction_only (bool): Whether to only include lowest powers of interaction or
-              include higher powers.
-            - y_axis_label (string): Y axis label
-            - kwargs: Keyword arguments passed to score_function
-
-        Raises:
-            -
+    Raises:
+        -
     """
-
     feature_interaction_data, feature_interaction_names, powers = \
         _make_interactions(feature_data, feature_names, degree=degree, interaction_only=interaction_only)
 
@@ -313,36 +308,35 @@ def _score_plot(ax, feature_data, response_data, feature_names, response_names, 
 
 def _make_interactions(feature_data, feature_names, degree=2, interaction_only=False):
     """
-        Create interactions between features
+    Create interactions between features
 
-        Creates the polynomial interactions by creating all possible combinations between
-        each individual feature.
-        An interaction data column is the product of 2 or more features.
-        An interaction name is a concatenation of the names of the columns used to create
-        the interaction.
-        If interaction_only is False, then feature columns are allowed to interact with
-        themselves.
-        In other word, if interaction_only is False,
-        then feature columns may be raised to a power in their interactions.
+    Creates the polynomial interactions by creating all possible combinations between
+    each individual feature.
+    An interaction data column is the product of 2 or more features.
+    An interaction name is a concatenation of the names of the columns used to create
+    the interaction.
+    If interaction_only is False, then feature columns are allowed to interact with
+    themselves.
+    In other word, if interaction_only is False,
+    then feature columns may be raised to a power in their interactions.
 
-        Args:
-            - feature_data ([[float]]): Array-like of feature data
-            - feature_names ([string]): Array-like of feature names
-            - degree (int): Maximum degree of interaction
-            - interaction_only (bool): Whether to only include lowest powers of interaction
-              or include higher powers.
+    Args:
+        - feature_data ([[float]]): Array-like of feature data
+        - feature_names ([string]): Array-like of feature names
+        - degree (int): Maximum degree of interaction
+        - interaction_only (bool): Whether to only include lowest powers of interaction
+          or include higher powers.
 
-        Returns:
-             - Feature interaction data ([[float]]): The resulting feature data from the interactions
-             - Feature interaction names ([string]): The resulting feature names from the interactions
-             - Feature interaction powers ([[int]]): An array containing the powers to which each feature
-                                                     was raised.
-                                                     to create the interactions.
+    Returns:
+         - Feature interaction data ([[float]]): The resulting feature data from the interactions
+         - Feature interaction names ([string]): The resulting feature names from the interactions
+         - Feature interaction powers ([[int]]): An array containing the powers to which each feature
+                                                 was raised.
+                                                 to create the interactions.
 
-        Raises:
-            -
+    Raises:
+        -
     """
-
     feature_interaction_names = []
 
     if interaction_only:
@@ -367,26 +361,26 @@ def _make_interactions(feature_data, feature_names, degree=2, interaction_only=F
 
 def _f_score(feature_data, response_data, center=True, **kwargs):
     """
-        Scores features based on an F-test of linear regression coefficients
+    Scores features based on an F-test of linear regression coefficients
 
-        Each features is scored using an F-test of linear regression coefficients.
-        The F statistic is calculated by looking at the difference between a linear model with
-        and without the feature included.
-        See sklearn.feature_selction.f_regression for more information.
+    Each features is scored using an F-test of linear regression coefficients.
+    The F statistic is calculated by looking at the difference between a linear model with
+    and without the feature included.
+    See sklearn.feature_selction.f_regression for more information.
 
-        Args:
-            - feature_data ([[float]]): Array-like of feature data. Each column is a feature;
-              each row is an observation.
-            - response_data ([[float]]): Array-like of response data. Rows correspond to rows
-              in feature data.
-            - center (bool): Whether to center data feature_data before calculating scores
-            - kwargs: Captures superfluous keyword arguments
+    Args:
+        - feature_data ([[float]]): Array-like of feature data. Each column is a feature;
+          each row is an observation.
+        - response_data ([[float]]): Array-like of response data. Rows correspond to rows
+          in feature data.
+        - center (bool): Whether to center data feature_data before calculating scores
+        - kwargs: Captures superfluous keyword arguments
 
-        Returns:
-            - Scores ([float]): The scores of each feature
+    Returns:
+        - Scores ([float]): The scores of each feature
 
-        Raises:
-            -
+    Raises:
+        -
     """
     scores, p_values = f_regression(feature_data, response_data, center=center)
     return scores
@@ -394,29 +388,29 @@ def _f_score(feature_data, response_data, center=True, **kwargs):
 
 def _f_p_score(feature_data, response_data, center=True, **kwargs):
     """
-        Give the p-value for an F-test of linear regression coefficients for each feature.
+    Give the p-value for an F-test of linear regression coefficients for each feature.
 
-        Each features is scored using an F-test of linear regression coefficients.
-        The F statistic is calculated by looking at the difference between a linear model with
-        and without the feature included.
-        The p-value of this F statistic is returned.
-        In general, a p-value < 0.05 is considered significant, meaning that particular feature
-        is worth keeping.
-        See sklearn.feature_selction.f_regression for more information.
+    Each features is scored using an F-test of linear regression coefficients.
+    The F statistic is calculated by looking at the difference between a linear model with
+    and without the feature included.
+    The p-value of this F statistic is returned.
+    In general, a p-value < 0.05 is considered significant, meaning that particular feature
+    is worth keeping.
+    See sklearn.feature_selction.f_regression for more information.
 
-        Args:
-            - feature_data ([[float]]): Array-like of feature data. Each column is a feature;
-              each row is an observation.
-            - response_data ([[float]]): Array-like of response data. Rows correspond to rows
-              in feature data.
-            - center (bool): Whether to center data feature_data before calculating scores
-            - kwargs: Captures superfluous keyword arguments
+    Args:
+        - feature_data ([[float]]): Array-like of feature data. Each column is a feature;
+          each row is an observation.
+        - response_data ([[float]]): Array-like of response data. Rows correspond to rows
+          in feature data.
+        - center (bool): Whether to center data feature_data before calculating scores
+        - kwargs: Captures superfluous keyword arguments
 
-        Returns:
-            - p_values ([float]): The p-values of each feature
+    Returns:
+        - p_values ([float]): The p-values of each feature
 
-        Raises:
-            -
+    Raises:
+        -
     """
     scores, p_values = f_regression(feature_data, response_data, center=center)
     return p_values
@@ -424,59 +418,58 @@ def _f_p_score(feature_data, response_data, center=True, **kwargs):
 
 def _mutual_info_score(feature_data, response_data, n_neighbors=3, **kwargs):
     """
-        Scores each feature based on the amount of mutual information shared with the response.
+    Scores each feature based on the amount of mutual information shared with the response.
 
-        Each feature is scored using an estimate of mutual information between it and the response data.
-        Mutual information measures the amount of information that can be obtained about the response
-        by observing the particular feature.
-        See sklearn.eature_selection.mutual_info_regression for more information.
+    Each feature is scored using an estimate of mutual information between it and the response data.
+    Mutual information measures the amount of information that can be obtained about the response
+    by observing the particular feature.
+    See sklearn.eature_selection.mutual_info_regression for more information.
 
-        Args:
-            - feature_data ([[float]]): Array-like of feature data. Each column is a feature;
-              each row is an observation.
-            - response_data ([[float]]): Array-like of response data. Rows correspond to rows
-              in feature data.
-            - n_neighbors (int): How many neighboring bins to consider when estimating mutual
-              information.
-            - kwargs: Captures superfluous keyword arguments
+    Args:
+        - feature_data ([[float]]): Array-like of feature data. Each column is a feature;
+          each row is an observation.
+        - response_data ([[float]]): Array-like of response data. Rows correspond to rows
+          in feature data.
+        - n_neighbors (int): How many neighboring bins to consider when estimating mutual
+          information.
+        - kwargs: Captures superfluous keyword arguments
 
-        Returns:
-            - Scores ([float]): The scores of each feature
+    Returns:
+        - Scores ([float]): The scores of each feature
 
-        Raises:
-            -
+    Raises:
+        -
     """
     return mutual_info_regression(feature_data, response_data, n_neighbors=n_neighbors)
 
 
 def _pce_score(feature_data, response_data, ranges, powers, pce_degree=1, model_degrees=1, **kwargs):
     """
-        Scores each feature based on the amount of variance it contributes to the response in a PCE model.
+    Scores each feature based on the amount of variance it contributes to the response in a PCE model.
 
-        Each feature is scored using variance decomposition with a Polynomial Chaos Expansion (PCE) model.
-        The PCE model uses linear regression on an basis of orthogonal polynomials.
-        Using the coefficients of this model,
-        each feature's contribution the the variance of the response can be assigned.
-        The score is the portion of response variance that the feature is estimated to have contributed.
+    Each feature is scored using variance decomposition with a Polynomial Chaos Expansion (PCE) model.
+    The PCE model uses linear regression on an basis of orthogonal polynomials.
+    Using the coefficients of this model,
+    each feature's contribution the the variance of the response can be assigned.
+    The score is the portion of response variance that the feature is estimated to have contributed.
 
-        Args:
-            - feature_data ([[float]]): Array-like of feature data. Each column is a feature; each row
-              is an observation.
-            - response_data ([[float]]): Array-like of response data. Rows correspond to rows in feature
-              data.
-            - ranges ([[float]]): Array-like of feature ranges.
-                                  Each row is a length 2 array of the lower and upper bounds.
-            - pce_degree (int): Maximum degree of interaction to score
-            - model_degrees (int): Maximum degree of interaction for PCE model
-            - kwargs: Captures superfluous keyword arguments
+    Args:
+        - feature_data ([[float]]): Array-like of feature data. Each column is a feature; each row
+          is an observation.
+        - response_data ([[float]]): Array-like of response data. Rows correspond to rows in feature
+          data.
+        - ranges ([[float]]): Array-like of feature ranges.
+                              Each row is a length 2 array of the lower and upper bounds.
+        - pce_degree (int): Maximum degree of interaction to score
+        - model_degrees (int): Maximum degree of interaction for PCE model
+        - kwargs: Captures superfluous keyword arguments
 
-        Returns:
-            - Scores ([float]): The scores of each feature
+    Returns:
+        - Scores ([float]): The scores of each feature
 
-        Raises:
-            -
+    Raises:
+        -
     """
-
     feature_data_to_fit = feature_data[:, powers.sum(axis=-1) == 1]
 
     model = PolynomialChaosExpansionModel(num_degrees=model_degrees, ranges=ranges)
@@ -487,20 +480,20 @@ def _pce_score(feature_data, response_data, ranges, powers, pce_degree=1, model_
 
 def one_at_a_time_effects(feature_data, response_data):
     """
-        Calculates the elementary effects for a one-at-a-time study.
+    Calculates the elementary effects for a one-at-a-time study.
 
-        The `feature_data` points should have been generated from trata.sampler.OneAtATimeSampler
-        with `do_oat=True` or similar.
-        Two elementary effects are calculated per feature resulting in 2*p total effects
+    The `feature_data` points should have been generated from trata.sampler.OneAtATimeSampler
+    with `do_oat=True` or similar.
+    Two elementary effects are calculated per feature resulting in 2*p total effects
 
-        Args:
-            - feature_data ([[float]]): Array-like of feature data. Each column is a feature; each row
-              is an observation.
-            - response_data ([[float]]): Array-like of response data. Rows correspond to rows in feature
-              data.
+    Args:
+        - feature_data ([[float]]): Array-like of feature data. Each column is a feature; each row
+          is an observation.
+        - response_data ([[float]]): Array-like of response data. Rows correspond to rows in feature
+          data.
 
-        Returns:
-            - Elementary Effects ([[float]]): (p by 2) Numpy Array of elementary effects
+    Returns:
+        - Elementary Effects ([[float]]): (p by 2) Numpy Array of elementary effects
     """
     m, n = feature_data.shape
     assert m == 2*n+1
@@ -517,29 +510,37 @@ def one_at_a_time_effects(feature_data, response_data):
 
 def morris_effects(feature_data, response_data, tol=1e-12):
     """
-        Calculates the elementary effects for a Morris one-at-a-time study.
+    Calculates the elementary effects and Morris statistics for a Morris one-at-a-time study.
 
-        The `feature_data` points should have been generated from trata.sampler.MorrisOneAtATimeSampler
-        or similar.
-        The number of elementary effects calculated depends on the number of paths in the study.
-        Each path produces one elementary effect per dimension.
-        So for r paths, p*r total effects will be calculated.
+    The `feature_data` points should have been generated from trata.sampler.MorrisOneAtATimeSampler
+    or similar.
+    The number of elementary effects calculated depends on the number of paths in the study.
+    Each path produces one elementary effect per dimension.
+    So for r paths, p*r total effects will be calculated.
 
-        Args:
-            - feature_data ([[float]]): Array-like of feature data. Each column is a feature; each row
-              is an observation.
-            - response_data ([[float]]): Array-like of response data. Rows correspond to rows in feature
-              data.
+    Args:
+        - feature_data ([[float]]): Array-like of feature data. Each column is a feature; each row
+          is an observation.
+        - response_data ([[float]]): Array-like of response data. Rows correspond to rows in feature
+          data.
+        - tol (float): Tolerance for numerical stability in parameter change detection.
 
-        Returns:
-            - Elementary Effects ([[float]]): (p by r) Numpy Array of elementary effects
-        """
-    # Input validation
+    Returns:
+        - dict: Contains 'elementary_effects' (r by k array), 'mu', 'mu_star', and 'sigma' arrays
+    """
+    # Input validation and conversion
     feature_data = np.asarray(feature_data)
     response_data = np.asarray(response_data)
+    
+    # Handle 1D response data
+    if response_data.ndim == 1:
+        response_data_1d = response_data
+    else:
+        response_data_1d = response_data.squeeze()
 
-    if feature_data.shape[0] != response_data.shape[0]:
-        raise ValueError("Feature and response data must have same number of rows")
+    if feature_data.shape[0] != len(response_data_1d):
+        raise ValueError(f"Feature and response data must have same number of rows. "
+                        f"Feature: {feature_data.shape[0]}, Response: {len(response_data_1d)}")
 
     n, k = feature_data.shape
     if n % (k + 1) != 0:
@@ -563,7 +564,7 @@ def morris_effects(feature_data, response_data, tol=1e-12):
         return val
 
     elementary_effects = np.array([make_effect(_x, _y) for _x, _y in zip(feature_data.reshape(r, k + 1, k),
-                                                                         response_data.reshape(r, k + 1))])
+                                                                    response_data_1d.reshape(r, k + 1))])
 
     # Calculate Morris statistics
     mu = np.mean(elementary_effects, axis=0)
@@ -601,7 +602,6 @@ def sobol_indices(feature_data, response_data, include_second_order=False, **kwa
     Raises:
         - ValueError, TypeError
     """
-
     r, k = feature_data.shape
     response_row, response_col = response_data.shape
 
@@ -701,65 +701,159 @@ def oat_score_function(feature_data, response_data, method='morris', statistic='
         raise ValueError(f"Unknown method: {method}")
 
 
-def morris_score_plot(ax, feature_data, response_data, feature_names, response_names,
-                      statistic='mu_star', degree=1, interaction_only=True):
+def morris_score_plot(ax, feature_data, response_data, feature_names, response_names, 
+                      show_both=True, degree=1, interaction_only=True):
     """
-    Plots Morris score plot
-
+    Plots Morris score plot showing mu_star and optionally sigma
+    
     Args:
         - ax ([matplotlib.Axes]): Array-like of Axes to plot to
         - feature_data ([[float]]): Array-like of feature data
         - response_data ([[float]]): Array-like of response data
         - feature_names ([string]): Array-like of feature names
         - response_names ([string]): Array-like of response names
-        - statistic (string): 'mu_star', 'sigma', or 'mu'
-        - degree (int): Maximum degree of interaction
+        - show_both (bool): If True, shows both mu_star and sigma; if False, only mu_star
+        - degree (int): Maximum degree of interaction (Morris only works with degree=1)
         - interaction_only (bool): Whether to only include lowest powers of interaction
     """
-    def score_func(fd, rd, **kwargs):
-        return oat_score_function(fd, rd, 'morris', statistic, **kwargs)
-
-    title = f'Morris {statistic.replace("_", " ").title()}'
-    y_label = f'{statistic} Score'
-
-    _score_plot(ax=ax,
-                feature_data=feature_data,
-                response_data=response_data,
-                feature_names=feature_names,
-                response_names=response_names,
-                score_function=score_func,
-                title=title,
-                degree=degree,
-                interaction_only=interaction_only,
-                y_axis_label=y_label)
-
+    # Morris only works with original parameters (degree=1)
+    if degree > 1:
+        raise ValueError("Morris method only works with degree=1 (no polynomial interactions)")
+    
+    # Convert to numpy arrays and handle 1D response data
+    feature_data = np.asarray(feature_data)
+    response_data = np.asarray(response_data)
+    if response_data.ndim == 1:
+        response_data = response_data.reshape(-1, 1)
+    
+    # Calculate Morris statistics
+    results = morris_effects(feature_data, response_data.squeeze())
+    mu_star = results['mu_star']
+    sigma = results['sigma']
+    
+    # Create the plot
+    for y_col, y_name, axes in zip(response_data.T, response_names, ax):
+        if show_both:
+            x = np.arange(len(feature_names))
+            width = 0.35
+            
+            bars1 = axes.bar(x - width/2, mu_star, width, label='μ* (Overall Effect)', alpha=0.8)
+            bars2 = axes.bar(x + width/2, sigma, width, label='σ (Interactions)', alpha=0.8)
+            
+            axes.set_xlabel('Parameter')
+            axes.set_ylabel('Morris Score')
+            axes.set_title(f'Morris Sensitivity Analysis ({y_name})')
+            axes.set_xticks(x)
+            axes.set_xticklabels(feature_names, rotation=70)
+            axes.legend()
+            
+            # Add value labels on bars
+            for bar in bars1:
+                height = bar.get_height()
+                axes.text(bar.get_x() + bar.get_width()/2., height,
+                         f'{height:.3f}', ha='center', va='bottom', fontsize=9)
+            for bar in bars2:
+                height = bar.get_height()
+                axes.text(bar.get_x() + bar.get_width()/2., height,
+                         f'{height:.3f}', ha='center', va='bottom', fontsize=9)
+        else:
+            bars = axes.bar(feature_names, mu_star)
+            axes.tick_params(axis='x', labelrotation=70)
+            axes.set_xlabel('Parameter')
+            axes.set_ylabel('μ* Score')
+            axes.set_title(f'Morris μ* (Overall Sensitivity) ({y_name})')
+            
+            # Add value labels
+            for bar in bars:
+                height = bar.get_height()
+                axes.text(bar.get_x() + bar.get_width()/2., height,
+                         f'{height:.3f}', ha='center', va='bottom', fontsize=9)
 
 def morris_rank_plot(ax, feature_data, response_data, feature_names, response_names,
-                     statistic='mu_star', degree=1, interaction_only=True):
+                     rank_by='mu_star', show_both=False, degree=1, interaction_only=True):
     """
     Plots Morris rank plot
-
+    
     Args:
         - ax (matplotlib.Axes): Axes to plot to
         - feature_data ([[float]]): Array-like of feature data
         - response_data ([[float]]): Array-like of response data
         - feature_names ([string]): Array-like of feature names
         - response_names ([string]): Array-like of response names
-        - statistic (string): 'mu_star', 'sigma', or 'mu'
-        - degree (int): Maximum degree of interaction
+        - rank_by (string): 'mu_star' or 'sigma' - which statistic to use for ranking
+        - show_both (bool): If True, creates separate ranking for both mu_star and sigma
+        - degree (int): Maximum degree of interaction (Morris only works with degree=1)
         - interaction_only (bool): Whether to only include lowest powers of interaction
     """
-    def score_func(fd, rd, **kwargs):
-        return oat_score_function(fd, rd, 'morris', statistic, **kwargs)
+    # Morris only works with original parameters (degree=1)
+    if degree > 1:
+        raise ValueError("Morris method only works with degree=1 (no polynomial interactions)")
+    
+    # Convert to numpy arrays and handle 1D response data
+    feature_data = np.asarray(feature_data)
+    response_data = np.asarray(response_data)
+    if response_data.ndim == 1:
+        response_data = response_data.reshape(-1, 1)
+    
+    # Calculate Morris statistics for all responses
+    all_mu_star = []
+    all_sigma = []
+    for y_col in response_data.T:
+        results = morris_effects(feature_data, y_col)
+        all_mu_star.append(results['mu_star'])
+        all_sigma.append(results['sigma'])
+    
+    mu_star_scores = np.array(all_mu_star)
+    sigma_scores = np.array(all_sigma)
+    
+    if show_both:
+        # Show both statistics - extend feature names and scores
+        extended_feature_names = [f"{name} (μ*)" for name in feature_names] + [f"{name} (σ)" for name in feature_names]
+        scores = np.vstack([mu_star_scores, sigma_scores])
+        num_features = len(extended_feature_names)
+    else:
+        # Show only the requested statistic
+        scores = mu_star_scores if rank_by == 'mu_star' else sigma_scores
+        extended_feature_names = feature_names
+        num_features = len(feature_names)
+    
+    num_responses = len(response_names)
+    
+    # Create rank plot manually
+    order = np.argsort(-scores)
+    rank_table = np.argsort(order)
 
-    _rank_plot(ax=ax,
-               feature_data=feature_data,
-               response_data=response_data,
-               feature_names=feature_names,
-               response_names=response_names,
-               score_function=score_func,
-               degree=degree,
-               interaction_only=interaction_only)
+    divider = make_axes_locatable(ax)
+    cax = divider.append_axes('right', size='5%', pad=0.05)
+    color_mesh = ax.pcolormesh(num_features - rank_table.T, edgecolors='None', lw=0.0, cmap=cm.plasma)
+
+    ax.hlines(np.arange(1, num_features + 1), 0, num_responses, color='k')
+    ax.vlines(np.arange(1, num_responses + 1), 0, num_features, color='k')
+
+    cbar = plt.colorbar(color_mesh, cax=cax, orientation='vertical', values=np.arange(num_features) + 1)
+
+    for i in range(num_responses * num_features):
+        idx = np.unravel_index(i, (num_responses, num_features))
+        ax.text(idx[0] + .5, idx[1] + .5, rank_table[idx] + 1, ha='center', va='center')
+
+    ax.set_xticks(np.arange(num_responses) + 0.5)
+    ax.set_xticklabels(response_names, rotation=35, ha='right')
+    ax.set_xlabel('Outputs', ha='center')
+
+    ax.set_yticks(np.arange(num_features) + 0.5)
+    ax.set_yticklabels(extended_feature_names)
+    ax.set_ylabel('Parameters')
+
+    cbar_labels = np.arange(1, num_features + 1).astype('str')
+    cbar_labels[-1] += ' (Least Sensitive)'
+    cbar_labels[0] += ' (Most Sensitive)'
+
+    cbar.set_ticks(num_features - np.arange(num_features))
+    cbar.set_ticklabels(cbar_labels)
+
+    ax.set_xlim([0, num_responses])
+    ax.set_ylim([0, num_features])
+    ax.invert_yaxis()
 
 
 def oat_score_plot(ax, feature_data, response_data, feature_names, response_names,
@@ -958,25 +1052,25 @@ def lasso_path_plot(ax, feature_data, response_data, feature_names, response_nam
 def sensitivity_plot(ax, surrogate_model, feature_names, response_names, feature_ranges,
                      num_plot_points=100, num_seed_points=5, seed=2018):
     """
-        Plots sensitivity plots
+    Plots sensitivity plots
 
-        Also called spaghetti plot.
-        Plots a set of 1-d slices of the response surface.
-        Colors across plots correspond to the same seed point.
+    Also called spaghetti plot.
+    Plots a set of 1-d slices of the response surface.
+    Colors across plots correspond to the same seed point.
 
-        Args:
-            - ax ([[matplotlib.Axes]]): Array-like of Axes to plot to
-            - surrogate_model (surrogate_model): Surrogate model which has been fit
-            - feature_names ([string]): Array-like of feature names
-            - response_names ([string]): Array-like of response names
-            - feature_ranges ([[float]]): Array-like of feature ranges.
-                                          Each row is a length 2 array of the lower and upper bounds.
-            - num_plot_points (int): Number of points to plot on each dimension sweep
-            - num_seed_points (int): Number of points to use as default points
-            - seed (int): RNG seed
+    Args:
+        - ax ([[matplotlib.Axes]]): Array-like of Axes to plot to
+        - surrogate_model (surrogate_model): Surrogate model which has been fit
+        - feature_names ([string]): Array-like of feature names
+        - response_names ([string]): Array-like of response names
+        - feature_ranges ([[float]]): Array-like of feature ranges.
+                                      Each row is a length 2 array of the lower and upper bounds.
+        - num_plot_points (int): Number of points to plot on each dimension sweep
+        - num_seed_points (int): Number of points to use as default points
+        - seed (int): RNG seed
 
-        Raises:
-            -
+    Raises:
+        -
     """
     rand_gen = np.random.default_rng(seed)
 
@@ -1012,23 +1106,23 @@ def sensitivity_plot(ax, surrogate_model, feature_names, response_names, feature
 def f_score_plot(ax, feature_data, response_data, feature_names, response_names,
                  degree=1, interaction_only=True, use_p_value=False):
     """
-        Plots F score plot
+    Plots F score plot
 
-        Args:
-            - ax ([matplotlib.Axes]): Array-like of Axes to plot to
-            - feature_data ([[float]]): Array-like of feature data. Each column is a feature;
-              each row is an observation.
-            - response_data ([[float]]): Array-like of response data. Rows correspond to rows
-              in feature data.
-            - feature_names ([string]): Array-like of feature names
-            - response_names ([string]): Array-like of response names
-            - degree (int): Maximum degree of interaction
-            - interaction_only (bool): Whether to only include lowest powers of interaction or
-              include higher powers.
-            - use_p_value (bool): Whether to use p-values or raw F-score
+    Args:
+        - ax ([matplotlib.Axes]): Array-like of Axes to plot to
+        - feature_data ([[float]]): Array-like of feature data. Each column is a feature;
+          each row is an observation.
+        - response_data ([[float]]): Array-like of response data. Rows correspond to rows
+          in feature data.
+        - feature_names ([string]): Array-like of feature names
+        - response_names ([string]): Array-like of response names
+        - degree (int): Maximum degree of interaction
+        - interaction_only (bool): Whether to only include lowest powers of interaction or
+          include higher powers.
+        - use_p_value (bool): Whether to use p-values or raw F-score
 
-        Raises:
-            -
+    Raises:
+        -
     """
     _score_plot(ax=ax,
                 feature_data=feature_data,
@@ -1048,21 +1142,21 @@ def f_score_plot(ax, feature_data, response_data, feature_names, response_names,
 
 def mutual_info_score_plot(ax, feature_data, response_data, feature_names, response_names, n_neighbors=3):
     """
-        Plots mutual information score plot
+    Plots mutual information score plot
 
-        Args:
-            - ax ([matplotlib.Axes]): Array-like of Axes to plot to
-            - feature_data ([[float]]): Array-like of feature data. Each column is a feature;
-              each row is an observation.
-            - response_data ([[float]]): Array-like of response data. Rows correspond to rows
-              in feature data.
-            - feature_names ([string]): Array-like of feature names
-            - response_names ([string]): Array-like of response names
-            - n_neighbors (int): How many neighboring bins to consider when estimating mutual
-              information.
+    Args:
+        - ax ([matplotlib.Axes]): Array-like of Axes to plot to
+        - feature_data ([[float]]): Array-like of feature data. Each column is a feature;
+          each row is an observation.
+        - response_data ([[float]]): Array-like of response data. Rows correspond to rows
+          in feature data.
+        - feature_names ([string]): Array-like of feature names
+        - response_names ([string]): Array-like of response names
+        - n_neighbors (int): How many neighboring bins to consider when estimating mutual
+          information.
 
-        Raises:
-            -
+    Raises:
+        -
     """
     _score_plot(ax=ax,
                 feature_data=feature_data,
@@ -1080,23 +1174,23 @@ def mutual_info_score_plot(ax, feature_data, response_data, feature_names, respo
 def pce_score_plot(ax, feature_data, response_data, feature_names, response_names, feature_ranges,
                    degree=1, model_degrees=1):
     """
-        Plots PCE score plot
+    Plots PCE score plot
 
-        Args:
-            - ax ([matplotlib.Axes]): Array-like of Axes to plot to
-            - feature_data ([[float]]): Array-like of feature data. Each column is a feature;
-              each row is an observation.
-            - response_data ([[float]]): Array-like of response data. Rows correspond to rows in
-              feature data.
-            - feature_names ([string]): Array-like of feature names
-            - response_names ([string]): Array-like of response names
-            - feature_ranges ([[float]]): Array-like of feature ranges. Each row is a length 2
-              array of the lower and upper bounds.
-            - degree (int): Maximum degree of interaction to plot
-            - model_degrees (int): Maximum degree of interaction for PCE model
+    Args:
+        - ax ([matplotlib.Axes]): Array-like of Axes to plot to
+        - feature_data ([[float]]): Array-like of feature data. Each column is a feature;
+          each row is an observation.
+        - response_data ([[float]]): Array-like of response data. Rows correspond to rows in
+          feature data.
+        - feature_names ([string]): Array-like of feature names
+        - response_names ([string]): Array-like of response names
+        - feature_ranges ([[float]]): Array-like of feature ranges. Each row is a length 2
+          array of the lower and upper bounds.
+        - degree (int): Maximum degree of interaction to plot
+        - model_degrees (int): Maximum degree of interaction for PCE model
 
-        Raises:
-            -
+    Raises:
+        -
     """
     _score_plot(ax=ax,
                 feature_data=feature_data,
@@ -1116,23 +1210,23 @@ def pce_score_plot(ax, feature_data, response_data, feature_names, response_name
 def f_score_rank_plot(ax, feature_data, response_data, feature_names, response_names,
                       degree=1, interaction_only=True, use_p_value=False):
     """
-        Plots F score rank plot
+    Plots F score rank plot
 
-        Args:
-            - ax ([matplotlib.Axes]): Array-like of Axes to plot to
-            - feature_data ([[float]]): Array-like of feature data. Each column is a feature;
-              each row is an observation.
-            - response_data ([[float]]): Array-like of response data. Rows correspond to rows
-              in feature data.
-            - feature_names ([string]): Array-like of feature names
-            - response_names ([string]): Array-like of response names
-            - degree (int): Maximum degree of interaction
-            - interaction_only (bool): Whether to only include lowest powers of interaction or
-              include higher powers.
-            - use_p_value (bool): Whether to use p-values or raw F-score
+    Args:
+        - ax ([matplotlib.Axes]): Array-like of Axes to plot to
+        - feature_data ([[float]]): Array-like of feature data. Each column is a feature;
+          each row is an observation.
+        - response_data ([[float]]): Array-like of response data. Rows correspond to rows
+          in feature data.
+        - feature_names ([string]): Array-like of feature names
+        - response_names ([string]): Array-like of response names
+        - degree (int): Maximum degree of interaction
+        - interaction_only (bool): Whether to only include lowest powers of interaction or
+          include higher powers.
+        - use_p_value (bool): Whether to use p-values or raw F-score
 
-        Raises:
-            -
+    Raises:
+        -
     """
     _rank_plot(ax=ax,
                feature_data=feature_data,
@@ -1146,21 +1240,21 @@ def f_score_rank_plot(ax, feature_data, response_data, feature_names, response_n
 
 def mutual_info_rank_plot(ax, feature_data, response_data, feature_names, response_names, n_neighbors=3):
     """
-        Plots mutual information rank plot
+    Plots mutual information rank plot
 
-        Args:
-            - ax (matplotlib.Axes): Array-like of Axes to plot to
-            - feature_data ([[float]]): Array-like of feature data. Each column is a feature;
-              each row is an observation.
-            - response_data ([[float]]): Array-like of response data. Rows correspond to rows
-              in feature data.
-            - feature_names ([string]): Array-like of feature names
-            - response_names ([string]): Array-like of response names
-            - n_neighbors (int): How many neighboring bins to consider when estimating mutual
-              information.
+    Args:
+        - ax (matplotlib.Axes): Array-like of Axes to plot to
+        - feature_data ([[float]]): Array-like of feature data. Each column is a feature;
+          each row is an observation.
+        - response_data ([[float]]): Array-like of response data. Rows correspond to rows
+          in feature data.
+        - feature_names ([string]): Array-like of feature names
+        - response_names ([string]): Array-like of response names
+        - n_neighbors (int): How many neighboring bins to consider when estimating mutual
+          information.
 
-        Raises:
-            -
+    Raises:
+        -
     """
     _rank_plot(ax=ax,
                feature_data=feature_data,
@@ -1176,23 +1270,23 @@ def mutual_info_rank_plot(ax, feature_data, response_data, feature_names, respon
 def pce_rank_plot(ax, feature_data, response_data, feature_names, response_names, feature_ranges,
                   degree=1, model_degrees=1):
     """
-        Plots PCE rank plot
+    Plots PCE rank plot
 
-        Args:
-            - ax (matplotlib.Axes): Array-like of Axes to plot to
-            - feature_data ([[float]]): Array-like of feature data. Each column is a feature;
-              each row is an observation.
-            - response_data ([[float]]): Array-like of response data. Rows correspond to rows
-              in feature data.
-            - feature_names ([string]): Array-like of feature names
-            - response_names ([string]): Array-like of response names
-            - feature_ranges ([[float]]): Array-like of feature ranges. Each row is a length
-              2 array of the lower and upper bounds.
-            - degree (int): Maximum degree of interaction to plot
-            - model_degrees (int): Maximum degree of interaction for PCE model
+    Args:
+        - ax (matplotlib.Axes): Array-like of Axes to plot to
+        - feature_data ([[float]]): Array-like of feature data. Each column is a feature;
+          each row is an observation.
+        - response_data ([[float]]): Array-like of response data. Rows correspond to rows
+          in feature data.
+        - feature_names ([string]): Array-like of feature names
+        - response_names ([string]): Array-like of response names
+        - feature_ranges ([[float]]): Array-like of feature ranges. Each row is a length
+          2 array of the lower and upper bounds.
+        - degree (int): Maximum degree of interaction to plot
+        - model_degrees (int): Maximum degree of interaction for PCE model
 
-        Raises:
-            -
+    Raises:
+        -
     """
     _rank_plot(ax=ax,
                feature_data=feature_data,
@@ -1210,23 +1304,23 @@ def pce_rank_plot(ax, feature_data, response_data, feature_names, response_names
 def f_score_network_plot(ax, feature_data, response_data, feature_names, response_names,
                          degree=2, max_size=10.0, label_size=10, alpha=.5):
     """
-        Plots F score network plot
+    Plots F score network plot
 
-        Args:
-            - ax ([matplotlib.Axes]): Array-like of Axes to plot to
-            - feature_data ([[float]]): Array-like of feature data. Each column is a feature;
-              each row is an observation.
-            - response_data ([[float]]): Array-like of response data. Rows correspond to rows
-              in feature data.
-            - feature_names ([string]): Array-like of feature names
-            - response_names ([string]): Array-like of response names
-            - degree (int): Maximum degree of interaction
-            - max_size (float): Maximum size of elements in plot. Measured in points
-            - label_size (int): Font size of labels. Measured in points
-            - alpha (float): Opacity of elements in plot.
+    Args:
+        - ax ([matplotlib.Axes]): Array-like of Axes to plot to
+        - feature_data ([[float]]): Array-like of feature data. Each column is a feature;
+          each row is an observation.
+        - response_data ([[float]]): Array-like of response data. Rows correspond to rows
+          in feature data.
+        - feature_names ([string]): Array-like of feature names
+        - response_names ([string]): Array-like of response names
+        - degree (int): Maximum degree of interaction
+        - max_size (float): Maximum size of elements in plot. Measured in points
+        - label_size (int): Font size of labels. Measured in points
+        - alpha (float): Opacity of elements in plot.
 
-        Raises:
-            -
+    Raises:
+        -
     """
     _variance_network_plot(ax=ax,
                            feature_data=feature_data,
@@ -1244,26 +1338,26 @@ def f_score_network_plot(ax, feature_data, response_data, feature_names, respons
 def pce_network_plot(ax, feature_data, response_data, feature_names, response_names, feature_ranges,
                      degree=2, model_degrees=2, max_size=10.0, label_size=10, alpha=.5):
     """
-        Plots PCE network plot
+    Plots PCE network plot
 
-        Args:
-            - ax (matplotlib.Axes): Array-like of Axes to plot to
-            - feature_data ([[float]]): Array-like of feature data. Each column is a feature;
-              each row is an observation.
-            - response_data ([[float]]): Array-like of response data. Rows correspond to rows in
-              feature data.
-            - feature_names ([string]): Array-like of feature names
-            - response_names ([string]): Array-like of response names
-            - feature_ranges ([[float]]): Array-like of feature ranges. Each row is a length 2
-              array of the lower and upper bounds.
-            - degree (int): Maximum degree of interaction to plot
-            - model_degrees (int): Maximum degree of interaction for PCE model
-            - max_size (float): Maximum size of elements in plot. Measured in points
-            - label_size (int): Font size of labels. Measured in points
-            - alpha (float): Opacity of elements in plot.
+    Args:
+        - ax (matplotlib.Axes): Array-like of Axes to plot to
+        - feature_data ([[float]]): Array-like of feature data. Each column is a feature;
+          each row is an observation.
+        - response_data ([[float]]): Array-like of response data. Rows correspond to rows in
+          feature data.
+        - feature_names ([string]): Array-like of feature names
+        - response_names ([string]): Array-like of response names
+        - feature_ranges ([[float]]): Array-like of feature ranges. Each row is a length 2
+          array of the lower and upper bounds.
+        - degree (int): Maximum degree of interaction to plot
+        - model_degrees (int): Maximum degree of interaction for PCE model
+        - max_size (float): Maximum size of elements in plot. Measured in points
+        - label_size (int): Font size of labels. Measured in points
+        - alpha (float): Opacity of elements in plot.
 
-        Raises:
-            -
+    Raises:
+        -
     """
     _variance_network_plot(ax=ax,
                            feature_data=feature_data,
