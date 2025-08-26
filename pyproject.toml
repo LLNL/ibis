@@ -23,7 +23,7 @@ maintainers = [
 ]
 readme = "README.md"
 packages = [
-    {include = 'ibis'}
+    {include = 'ibis', from = 'src'}
 ]
 
 [tool.poetry.dependencies]
