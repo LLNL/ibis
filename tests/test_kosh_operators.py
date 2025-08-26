@@ -10,6 +10,7 @@ import kosh
 import h5py
 import scipy.stats as sts
 from sklearn.gaussian_process import GaussianProcessRegressor
+from trata.sampler import MorrisOneAtATimeSampler
 from ibis import kosh_operators
 
 warnings.filterwarnings("ignore", category=RuntimeWarning)
@@ -80,6 +81,23 @@ class TestUQMethods(unittest.TestCase):
         self.observed_std = [0.1]*3
         self.flattened = False
         self.scaled = False
+        # Morris data
+        box = [[-1, 1], [-1, 1]]
+        sampler = MorrisOneAtATimeSampler()
+        self.morris_X = sampler.sample_points(box, num_paths=4, seed=3)
+        self.morris_y = self.morris_X[:, 0]**2 + 0.5*self.morris_X[:, 1]
+        # OAT data
+        self.oat_X = np.array([[0.0, 0.0], 
+                               [1.0, 0.0], 
+                               [0.0, 1.0], 
+                               [0.5, 0.0], 
+                               [0.0, 0.5]])
+        self.oat_y = np.array([0.0, 1.0, 1.0, 0.5, 0.5])
+        np.random.seed(3)
+        self.sobol_X = np.random.uniform(-1, 1, (12, 2))
+        self.sobol_y = (self.sobol_X[:, 0]**2 + self.sobol_X[:, 1]).reshape(-1, 1)
+        self.feature_names = ['x1', 'x2']
+        self.response_names = ['output']
         fileName = "mytestfile.hdf5"
         work_dir = os.getcwd()
         file_path = os.path.join(work_dir, fileName)
@@ -87,6 +105,12 @@ class TestUQMethods(unittest.TestCase):
             os.remove(file_path)
         with h5py.File(fileName, "w") as f:
             f.create_dataset("observed", data=np.array([.5, .5, .5]))
+            f.create_dataset("morris_X", data=self.morris_X)
+            f.create_dataset("morris_y", data=self.morris_y)
+            f.create_dataset("oat_X", data=self.oat_X)
+            f.create_dataset("oat_y", data=self.oat_y)
+            f.create_dataset("sobol_X", data=self.sobol_X)
+            f.create_dataset("sobol_y", data=self.sobol_y)
             f.create_dataset("inputs", data=self.X)
             f.create_dataset("outputs", data=self.Y)
 
@@ -263,54 +287,54 @@ class TestUQMethods(unittest.TestCase):
 
         result1 = kosh_operators.KoshSensitivityPlots(self.dataset['inputs'],
                                                       method='oat_score',
-                                                      input_names=self.input_names,
+                                                      input_names=self.feature_names,
                                                       outputs=self.dataset['outputs'],
-                                                      output_names=self.output_names,
+                                                      output_names=self.response_names,
                                                       save_plot=True)[:]
         assert type(result1) == type(plt.figure())
         plt.close()
 
         result1 = kosh_operators.KoshSensitivityPlots(self.dataset['inputs'],
                                                       method='oat_rank',
-                                                      input_names=self.input_names,
+                                                      input_names=self.feature_names,
                                                       outputs=self.dataset['outputs'],
-                                                      output_names=self.output_names,
+                                                      output_names=self.response_names,
                                                       save_plot=True)[:]
         assert type(result1) == type(plt.figure())
         plt.close()
 
         result1 = kosh_operators.KoshSensitivityPlots(self.dataset['inputs'],
                                                       method='morris_score',
-                                                      input_names=self.input_names,
+                                                      input_names=self.feature_names,
                                                       outputs=self.dataset['outputs'],
-                                                      output_names=self.output_names,
+                                                      output_names=self.response_names,
                                                       save_plot=True)[:]
         assert type(result1) == type(plt.figure())
         plt.close()
 
         result1 = kosh_operators.KoshSensitivityPlots(self.dataset['inputs'],
                                                       method='morris_rank',
-                                                      input_names=self.input_names,
+                                                      input_names=self.feature_names,
                                                       outputs=self.dataset['outputs'],
-                                                      output_names=self.output_names,
+                                                      output_names=self.response_names,
                                                       save_plot=True)[:]
         assert type(result1) == type(plt.figure())
         plt.close()
 
         result1 = kosh_operators.KoshSensitivityPlots(self.dataset['inputs'],
                                                       method='sobol_score',
-                                                      input_names=self.input_names,
+                                                      input_names=self.feature_names,
                                                       outputs=self.dataset['outputs'],
-                                                      output_names=self.output_names,
+                                                      output_names=self.response_names,
                                                       save_plot=True)[:]
         assert type(result1) == type(plt.figure())
         plt.close()
 
         result1 = kosh_operators.KoshSensitivityPlots(self.dataset['inputs'],
                                                       method='sobol_rank',
-                                                      input_names=self.input_names,
+                                                      input_names=self.feature_names,
                                                       outputs=self.dataset['outputs'],
-                                                      output_names=self.output_names,
+                                                      output_names=self.response_names,
                                                       save_plot=True)[:]
         assert type(result1) == type(plt.figure())
         plt.close()

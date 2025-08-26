@@ -186,59 +186,6 @@ class KoshMCMC(KoshOperator):
         return mcmc_obj
 
 
-class KoshOneAtATimeEffects(KoshOperator):
-    """
-    Description
-    """
-
-    types = {"numpy": ["numpy", ]}
-
-    def __init__(self, *args, **options):
-        """
-                :param method: The sampling method that was used. Options are 'OAT'
-        or 'MOAT'.
-        :type method: string
-        :param inputs: The input datasets. Kosh datasets of one or more arrays.
-        The arrays should have features as columns and observation as rows.
-        :type inputs: Kosh datasets
-        :param input_names: The names of the inputs for plots
-        :type inputs_names: list of str
-        :param outputs: The output dataset. Rows correspond to rows in the feature data.
-        The arrays should have features as columns and observation as rows.
-        :type outputs: Kosh datasets
-        :param output_names: The names of the output variables.
-        :type output_names: str
-        """
-        super(KoshOneAtATimeEffects, self).__init__(*args, **options)
-        self.options = options
-
-    def operate(self, *inputs, format=None):
-
-        # Read in input kosh datasets into one numpy array
-        X = inputs[0][:]
-        for input_ in inputs[1:]:
-            X = np.append(X, input_[:], axis=0)
-
-        method = self.options.get("method")
-        outputs = self.options.get("outputs")
-
-        # Read in output dataset
-        Y = np.array(outputs[:])
-
-        if method == "OAT":
-            effects = sensitivity.one_at_a_time_effects(X, Y)
-
-        elif method == "MOAT":
-            effects = sensitivity.morris_effects(X, Y)
-
-        else:
-            msg = "Method must be 'OAT' or 'MOAT'. Was given "
-            msg += f"{method}"
-            raise ValueError(msg)
-
-        return effects
-
-
 class KoshSensitivityPlots(KoshOperator):
     """
     Description
@@ -317,7 +264,7 @@ class KoshSensitivityPlots(KoshOperator):
         output_names = self.options.get("output_names", "response")
         show_both = self.options.get("show_both", True)
         rank_by = self.options.get("rank_by", "mu_star")
-        statistic = self.optiont.get("statistic", "max")
+        statistic = self.options.get("statistic", "max")
         index_type = self.options.get("index_type", "first_order")
         include_second_order = self.options.get("include_second_order", False)
         surrogate_model = self.options.get("surrogate_model")

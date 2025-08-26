@@ -87,13 +87,13 @@ class TestUQMethods(unittest.TestCase):
         # Morris data
         box = [[-1, 1], [-1, 1]]
         sampler = MorrisOneAtATimeSampler()
-        self.morris_X = sampler.sample_points(box, num_paths=4, seed=42)
+        self.morris_X = sampler.sample_points(box, num_paths=4, seed=3)
         self.morris_y = self.morris_X[:, 0]**2 + 0.5*self.morris_X[:, 1]
         # OAT data
-        self.oat_X = np.array([[0.0, 0.0], 
-                               [1.0, 0.0], 
-                               [0.0, 1.0], 
-                               [0.5, 0.0], 
+        self.oat_X = np.array([[0.0, 0.0],
+                               [1.0, 0.0],
+                               [0.0, 1.0],
+                               [0.5, 0.0],
                                [0.0, 0.5]])
         self.oat_y = np.array([0.0, 1.0, 1.0, 0.5, 0.5])
         np.random.seed(3)
