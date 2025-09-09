@@ -219,12 +219,12 @@ def _rank_plot(ax, feature_data, response_data, feature_names, response_names, s
     num_responses = response_data.shape[1]
 
     if "pce_score" in str(score_function):
-        scores = np.row_stack([score_function(feature_interaction_data,
+        scores = np.vstack([score_function(feature_interaction_data,
                                               response_column, powers=powers,
                                               **kwargs) for response_column in response_data.T])
 
     else:
-        scores = np.row_stack([score_function(feature_interaction_data,
+        scores = np.vstack([score_function(feature_interaction_data,
                                               response_column,
                                               **kwargs) for response_column in response_data.T])
 
@@ -238,7 +238,7 @@ def _rank_plot(ax, feature_data, response_data, feature_names, response_names, s
     ax.hlines(np.arange(1, num_features + 1), 0, num_responses, color='k')
     ax.vlines(np.arange(1, num_responses + 1), 0, num_features, color='k')
 
-    cbar = plt.colorbar(color_mesh, cax=cax, orientation='vertical', values=np.arange(num_features) + 1)
+    cbar = plt.colorbar(color_mesh, cax=cax, orientation='vertical')
 
     for i in range(num_responses * num_features):
         idx = np.unravel_index(i, (num_responses, num_features))
@@ -726,6 +726,10 @@ def morris_score_plot(ax, feature_data, response_data, feature_names, response_n
     if response_data.ndim == 1:
         response_data = response_data.reshape(-1, 1)
 
+    # Handle single axes case
+    if not hasattr(ax, '__iter__'):
+        ax = [ax]
+
     # Calculate Morris statistics
     results = morris_effects(feature_data, response_data.squeeze())
     mu_star = results['mu_star']
@@ -810,7 +814,7 @@ def morris_rank_plot(ax, feature_data, response_data, feature_names, response_na
     if show_both:
         # Show both statistics - extend feature names and scores
         extended_feature_names = [f"{name} (μ*)" for name in feature_names] + [f"{name} (σ)" for name in feature_names]
-        scores = np.vstack([mu_star_scores, sigma_scores])
+        scores = np.concatenate([mu_star_scores, sigma_scores], axis=1)
         num_features = len(extended_feature_names)
     else:
         # Show only the requested statistic
@@ -827,19 +831,19 @@ def morris_rank_plot(ax, feature_data, response_data, feature_names, response_na
     divider = make_axes_locatable(ax)
     cax = divider.append_axes('right', size='5%', pad=0.05)
 
-    # Fix: Use proper range for colorbar
     color_mesh = ax.pcolormesh(num_features - rank_table.T, edgecolors='None', lw=0.0, cmap=cm.plasma,
                                vmin=0, vmax=num_features)
 
     ax.hlines(np.arange(1, num_features + 1), 0, num_responses, color='k')
     ax.vlines(np.arange(1, num_responses + 1), 0, num_features, color='k')
 
-    # Fix: Remove problematic values parameter
     cbar = plt.colorbar(color_mesh, cax=cax, orientation='vertical')
 
-    for i in range(num_responses * num_features):
-        idx = np.unravel_index(i, (num_responses, num_features))
-        ax.text(idx[0] + .5, idx[1] + .5, rank_table[idx] + 1, ha='center', va='center')
+    for response_idx in range(num_responses):
+        for feature_idx in range(num_features):
+            rank_value = rank_table[response_idx, feature_idx] + 1
+            ax.text(response_idx + 0.5, feature_idx + 0.5, rank_value, 
+                   ha='center', va='center')
 
     ax.set_xticks(np.arange(num_responses) + 0.5)
     ax.set_xticklabels(response_names, rotation=35, ha='right')
@@ -862,10 +866,10 @@ def morris_rank_plot(ax, feature_data, response_data, feature_names, response_na
 
 
 def oat_score_plot(ax, feature_data, response_data, feature_names, response_names,
-                   statistic='max', degree=1, interaction_only=True):
+                   statistic='max'):
     """
     Plots One-at-a-Time score plot
-
+    
     Args:
         - ax ([matplotlib.Axes]): Array-like of Axes to plot to
         - feature_data ([[float]]): Array-like of feature data
@@ -873,8 +877,6 @@ def oat_score_plot(ax, feature_data, response_data, feature_names, response_name
         - feature_names ([string]): Array-like of feature names
         - response_names ([string]): Array-like of response names
         - statistic (string): 'mean', 'std', 'max', 'min', or 'range'
-        - degree (int): Maximum degree of interaction
-        - interaction_only (bool): Whether to only include lowest powers of interaction
     """
     # Convert to numpy arrays and handle 1D response data
     feature_data = np.asarray(feature_data)
@@ -882,28 +884,17 @@ def oat_score_plot(ax, feature_data, response_data, feature_names, response_name
     if response_data.ndim == 1:
         response_data = response_data.reshape(-1, 1)
 
-    # Calculate OAT effects
-    effects = one_at_a_time_effects(feature_data, response_data.squeeze())
-
-    # Calculate the requested statistic
-    if statistic == 'mean':
-        scores = np.mean(effects, axis=1)
-    elif statistic == 'std':
-        scores = np.std(effects, axis=1, ddof=1)
-    elif statistic == 'max':
-        scores = np.max(np.abs(effects), axis=1)
-    elif statistic == 'min':
-        scores = np.min(np.abs(effects), axis=1)
-    elif statistic == 'range':
-        scores = np.ptp(effects, axis=1)
-    else:
-        raise ValueError(f"Unknown OAT statistic: {statistic}")
+    # Handle single axes case
+    if not hasattr(ax, '__iter__'):
+        ax = [ax]
 
     title = f'OAT {statistic.title()} Effects'
     y_label = f'{statistic} Effect'
 
     # Create the plot directly
     for y_col, y_name, axes in zip(response_data.T, response_names, ax):
+        scores = oat_score_function(feature_data, y_col, method='oat', statistic=statistic)
+        
         axes.bar(feature_names, scores)
         axes.tick_params(axis='x', labelrotation=70)
         axes.set_xlabel('Parameter')
@@ -912,7 +903,7 @@ def oat_score_plot(ax, feature_data, response_data, feature_names, response_name
 
 
 def oat_rank_plot(ax, feature_data, response_data, feature_names, response_names,
-                  statistic='max', degree=1, interaction_only=True):
+                  statistic='max'):
     """
     Plots One-at-a-Time rank plot
 
@@ -923,8 +914,6 @@ def oat_rank_plot(ax, feature_data, response_data, feature_names, response_names
         - feature_names ([string]): Array-like of feature names
         - response_names ([string]): Array-like of response names
         - statistic (string): 'mean', 'std', 'max', 'min', or 'range'
-        - degree (int): Maximum degree of interaction
-        - interaction_only (bool): Whether to only include lowest powers of interaction
     """
     # Convert to numpy arrays and handle 1D response data
     feature_data = np.asarray(feature_data)
@@ -932,24 +921,10 @@ def oat_rank_plot(ax, feature_data, response_data, feature_names, response_names
     if response_data.ndim == 1:
         response_data = response_data.reshape(-1, 1)
 
-    # Calculate OAT statistics for all responses
+    # Calculate OAT statistics for all responses using the existing function
     all_scores = []
     for y_col in response_data.T:
-        effects = one_at_a_time_effects(feature_data, y_col)
-
-        if statistic == 'mean':
-            scores = np.mean(effects, axis=1)
-        elif statistic == 'std':
-            scores = np.std(effects, axis=1, ddof=1)
-        elif statistic == 'max':
-            scores = np.max(np.abs(effects), axis=1)
-        elif statistic == 'min':
-            scores = np.min(np.abs(effects), axis=1)
-        elif statistic == 'range':
-            scores = np.ptp(effects, axis=1)
-        else:
-            raise ValueError(f"Unknown OAT statistic: {statistic}")
-
+        scores = oat_score_function(feature_data, y_col, method='oat', statistic=statistic)
         all_scores.append(scores)
 
     scores = np.array(all_scores)
@@ -967,7 +942,7 @@ def oat_rank_plot(ax, feature_data, response_data, feature_names, response_names
     ax.hlines(np.arange(1, num_features + 1), 0, num_responses, color='k')
     ax.vlines(np.arange(1, num_responses + 1), 0, num_features, color='k')
 
-    cbar = plt.colorbar(color_mesh, cax=cax, orientation='vertical', values=np.arange(num_features) + 1)
+    cbar = plt.colorbar(color_mesh, cax=cax, orientation='vertical')
 
     for i in range(num_responses * num_features):
         idx = np.unravel_index(i, (num_responses, num_features))
@@ -1025,6 +1000,10 @@ def sobol_score_plot(ax, feature_data, response_data, feature_names, response_na
         scores = S_Ti
     else:
         raise ValueError(f"Unknown index_type: {index_type}")
+
+    # Handle single axes case
+    if not hasattr(ax, '__iter__'):
+        ax = [ax]
 
     title = f'Sobol {index_type.replace("_", " ").title()} Indices'
     y_label = f'{index_type.replace("_", " ").title()} Index'
@@ -1092,7 +1071,7 @@ def sobol_rank_plot(ax, feature_data, response_data, feature_names, response_nam
     ax.hlines(np.arange(1, num_features + 1), 0, num_responses, color='k')
     ax.vlines(np.arange(1, num_responses + 1), 0, num_features, color='k')
 
-    cbar = plt.colorbar(color_mesh, cax=cax, orientation='vertical', values=np.arange(num_features) + 1)
+    cbar = plt.colorbar(color_mesh, cax=cax, orientation='vertical')
 
     for i in range(num_responses * num_features):
         idx = np.unravel_index(i, (num_responses, num_features))

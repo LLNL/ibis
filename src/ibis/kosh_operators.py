@@ -288,40 +288,38 @@ class KoshSensitivityPlots(KoshOperator):
         if method == "oat_score":
             fig, ax = plt.subplots(1, len(output_names))
             sensitivity.oat_score_plot(ax, X, Y, input_names, output_names,
-                                       statistic=statistic, degree=degree,
-                                       interaction_only=interaction_only)
+                                       statistic=statistic)
 
-        if method == "oat_rank":
-            fig, ax = plt.subplots(1, len(output_names))
+        elif method == "oat_rank":
+            fig, ax = plt.subplots(1, 1)  # Single subplot only
             sensitivity.oat_rank_plot(ax, X, Y, input_names, output_names,
-                                       statistic=statistic, degree=degree,
-                                       interaction_only=interaction_only)
+                                       statistic=statistic)
 
-        if method == "morris_score":
+        elif method == "morris_score":
             fig, ax = plt.subplots(1, len(output_names))
-            sensitivity.oat_score_plot(ax, X, Y, input_names, output_names,
+            sensitivity.morris_score_plot(ax, X, Y, input_names, output_names,
                                        show_both=show_both, degree=degree,
                                        interaction_only=interaction_only)
 
-        if method == "morris_rank":
-            fig, ax = plt.subplots(1, len(output_names))
-            sensitivity.oat_score_plot(ax, X, Y, input_names, output_names,
+        elif method == "morris_rank":
+            fig, ax = plt.subplots(1, 1)  # Single subplot only
+            sensitivity.morris_rank_plot(ax, X, Y, input_names, output_names,
                                        rank_by=rank_by, show_both=show_both, 
                                        degree=degree, interaction_only=interaction_only)
 
-        if method == "sobol_score":
+        elif method == "sobol_score":
             fig, ax = plt.subplots(1, len(output_names))
-            sensitivity.oat_score_plot(ax, X, Y, input_names, output_names,
+            sensitivity.sobol_score_plot(ax, X, Y, input_names, output_names,
                                        index_type=index_type,
                                        include_second_order=include_second_order)
 
-        if method == "sobol_rank":
+        elif method == "sobol_rank":
             fig, ax = plt.subplots(1, len(output_names))
-            sensitivity.oat_score_plot(ax, X, Y, input_names, output_names,
+            sensitivity.sobol_rank_plot(ax, X, Y, input_names, output_names,
                                        index_type=index_type,
                                        include_second_order=include_second_order)
 
-        if method == "lasso":
+        elif method == "lasso":
             fig, ax = plt.subplots(1, len(output_names))
             sensitivity.lasso_path_plot(ax, X, Y, input_names, output_names,
                                         degree=degree, method='lasso')
