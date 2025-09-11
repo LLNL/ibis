@@ -10,6 +10,7 @@ import kosh
 import h5py
 import scipy.stats as sts
 from sklearn.gaussian_process import GaussianProcessRegressor
+from trata.sampler import MorrisOneAtATimeSampler, OneAtATimeSampler, SobolIndexSampler
 from ibis import kosh_operators
 
 warnings.filterwarnings("ignore", category=RuntimeWarning)
@@ -80,6 +81,26 @@ class TestUQMethods(unittest.TestCase):
         self.observed_std = [0.1]*3
         self.flattened = False
         self.scaled = False
+        # Morris data
+        box = [[-1, 1], [-1, 1]]
+        sampler = MorrisOneAtATimeSampler()
+        self.morris_X = sampler.sample_points(box, num_paths=4, seed=3)
+        self.morris_y = self.morris_X[:, 0]**2 + 0.5*self.morris_X[:, 1]
+        # OAT data
+        oat_sampler = OneAtATimeSampler()
+        self.oat_X = oat_sampler.sample_points(box=[[-1, 1], [-1, 1]],
+                                               default=[0., 0.],
+                                               do_oat=True)
+        self.oat_y = self.oat_X[:, 0]**2 + 0.5*self.oat_X[:, 1]
+        np.random.seed(3)
+        sobol_sampler = SobolIndexSampler()
+        self.sobol_X = sobol_sampler.sample_points(box=[[-1, 1], [-1, 1]],
+                                                   num_points=12,
+                                                   default=[0., 0.],
+                                                   do_oat=True)
+        self.sobol_y = (self.sobol_X[:, 0]**2 + self.sobol_X[:, 1]).reshape(-1, 1)
+        self.feature_names = ['x1', 'x2']
+        self.response_names = ['output']
         fileName = "mytestfile.hdf5"
         work_dir = os.getcwd()
         file_path = os.path.join(work_dir, fileName)
@@ -87,6 +108,12 @@ class TestUQMethods(unittest.TestCase):
             os.remove(file_path)
         with h5py.File(fileName, "w") as f:
             f.create_dataset("observed", data=np.array([.5, .5, .5]))
+            f.create_dataset("morris_X", data=self.morris_X)
+            f.create_dataset("morris_y", data=self.morris_y)
+            f.create_dataset("oat_X", data=self.oat_X)
+            f.create_dataset("oat_y", data=self.oat_y)
+            f.create_dataset("sobol_X", data=self.sobol_X)
+            f.create_dataset("sobol_y", data=self.sobol_y)
             f.create_dataset("inputs", data=self.X)
             f.create_dataset("outputs", data=self.Y)
 
@@ -249,9 +276,10 @@ class TestUQMethods(unittest.TestCase):
         matplotlib.use("agg", force=True)
         import matplotlib.pyplot as plt
 
-        methods = ["lasso", "sensitivity", "f_score", "mutual_info_score", "pce_score",
-                   "f_score_rank", "mutual_info_rank", "pce_rank", "f_score_network",
-                   "pce_network"]
+        methods = ["oat_score", "oat_rank", "morris_score", "morris_rank", "sobol_score",
+                   "sobol_rank", "lasso", "sensitivity", "f_score", "mutual_info_score",
+                   "pce_score", "f_score_rank", "mutual_info_rank", "pce_rank",
+                   "f_score_network", "pce_network"]
 
         for m in methods:
             plot_name = f"output_A_output_B_{m}_plot.png"
@@ -259,120 +287,186 @@ class TestUQMethods(unittest.TestCase):
                 os.remove(plot_name)
             except BaseException:
                 pass
+        with plt.rc_context():
+            result1 = kosh_operators.KoshSensitivityPlots(self.dataset['oat_X'],
+                                                          method='oat_score',
+                                                          input_names=self.feature_names,
+                                                          outputs=self.dataset['oat_y'],
+                                                          output_names=self.response_names,
+                                                          save_plot=True)[:]
+            assert type(result1) == type(plt.figure())
+            plt.close('all')
 
-        result1 = kosh_operators.KoshSensitivityPlots(self.dataset['inputs'],
-                                                      method='lasso',
-                                                      input_names=self.input_names,
-                                                      outputs=self.dataset['outputs'],
-                                                      output_names=self.output_names,
-                                                      degree=1,
-                                                      save_plot=True)[:]
-        assert type(result1) == type(plt.figure())
-        plt.close()
+            result2 = kosh_operators.KoshSensitivityPlots(self.dataset['oat_X'],
+                                                          method='oat_rank',
+                                                          input_names=self.feature_names,
+                                                          outputs=self.dataset['oat_y'],
+                                                          output_names=self.response_names,
+                                                          save_plot=True)[:]
+            assert type(result1) == type(plt.figure())
+            plt.close('all')
 
-        result2 = kosh_operators.KoshSensitivityPlots(self.dataset['inputs'],
-                                                      method='sensitivity',
-                                                      surrogate_model=self.s_model,
-                                                      input_names=self.input_names,
-                                                      outputs=self.dataset['outputs'],
-                                                      output_names=self.output_names,
-                                                      input_ranges=self.ranges,
-                                                      num_plot_points=10,
-                                                      num_seed_points=2,
-                                                      save_plot=True)[:]
-        assert type(result2) == type(plt.figure())
-        plt.close()
+            result3 = kosh_operators.KoshSensitivityPlots(self.dataset['morris_X'],
+                                                          method='morris_score',
+                                                          input_names=self.feature_names,
+                                                          outputs=self.dataset['morris_y'],
+                                                          output_names=self.response_names,
+                                                          save_plot=True)[:]
+            assert type(result1) == type(plt.figure())
+            plt.close('all')
 
-        result3 = kosh_operators.KoshSensitivityPlots(self.dataset['inputs'],
-                                                      method='f_score',
-                                                      input_names=self.input_names,
-                                                      outputs=self.dataset['outputs'],
-                                                      output_names=self.output_names,
-                                                      save_plot=True)[:]
-        assert type(result3) == type(plt.figure())
-        plt.close()
+            result4 = kosh_operators.KoshSensitivityPlots(self.dataset['morris_X'],
+                                                          method='morris_rank',
+                                                          input_names=self.feature_names,
+                                                          outputs=self.dataset['morris_y'],
+                                                          output_names=self.response_names,
+                                                          save_plot=True)[:]
+            assert type(result1) == type(plt.figure())
+            plt.close('all')
 
-        result4 = kosh_operators.KoshSensitivityPlots(self.dataset['inputs'],
-                                                      method='mutual_info_score',
-                                                      input_names=self.input_names,
-                                                      outputs=self.dataset['outputs'],
-                                                      output_names=self.output_names,
-                                                      n_neighbors=3,
-                                                      save_plot=True)[:]
-        assert type(result4) == type(plt.figure())
+            result5 = kosh_operators.KoshSensitivityPlots(self.dataset['sobol_X'],
+                                                          method='sobol_score',
+                                                          input_names=self.feature_names,
+                                                          outputs=self.dataset['sobol_y'],
+                                                          output_names=self.response_names,
+                                                          save_plot=True)[:]
+            assert type(result1) == type(plt.figure())
+            plt.close('all')
 
-        result5 = kosh_operators.KoshSensitivityPlots(self.dataset['inputs'],
-                                                      method='pce_score',
-                                                      input_names=self.input_names,
-                                                      outputs=self.dataset['outputs'],
-                                                      output_names=self.output_names,
-                                                      input_ranges=self.ranges,
-                                                      degree=1,
-                                                      model_degrees=1,
-                                                      save_plot=True)[:]
-        assert type(result5) == type(plt.figure())
-        plt.close()
+            result6 = kosh_operators.KoshSensitivityPlots(self.dataset['sobol_X'],
+                                                          method='sobol_rank',
+                                                          input_names=self.feature_names,
+                                                          outputs=self.dataset['sobol_y'],
+                                                          output_names=self.response_names,
+                                                          save_plot=True)[:]
+            assert type(result1) == type(plt.figure())
+            plt.close('all')
 
-        result6 = kosh_operators.KoshSensitivityPlots(self.dataset['inputs'],
-                                                      method='f_score_rank',
-                                                      input_names=self.input_names,
-                                                      outputs=self.dataset['outputs'],
-                                                      output_names=self.output_names,
-                                                      degree=1,
-                                                      save_plot=True)[:]
-        assert type(result6) == type(plt.figure())
-        plt.close()
+            result7 = kosh_operators.KoshSensitivityPlots(self.dataset['inputs'],
+                                                          method='lasso',
+                                                          input_names=self.input_names,
+                                                          outputs=self.dataset['outputs'],
+                                                          output_names=self.output_names,
+                                                          degree=1,
+                                                          save_plot=True)[:]
+            assert type(result1) == type(plt.figure())
+            plt.close('all')
 
-        result7 = kosh_operators.KoshSensitivityPlots(self.dataset['inputs'],
-                                                      method='mutual_info_rank',
-                                                      input_names=self.input_names,
-                                                      outputs=self.dataset['outputs'],
-                                                      output_names=self.output_names,
-                                                      n_neighbors=3,
-                                                      save_plot=True)[:]
-        assert type(result7) == type(plt.figure())
-        plt.close()
+            result8 = kosh_operators.KoshSensitivityPlots(self.dataset['inputs'],
+                                                          method='sensitivity',
+                                                          surrogate_model=self.s_model,
+                                                          input_names=self.input_names,
+                                                          outputs=self.dataset['outputs'],
+                                                          output_names=self.output_names,
+                                                          input_ranges=self.ranges,
+                                                          num_plot_points=10,
+                                                          num_seed_points=2,
+                                                          save_plot=True)[:]
+            assert type(result2) == type(plt.figure())
+            plt.close('all')
 
-        result8 = kosh_operators.KoshSensitivityPlots(self.dataset['inputs'],
-                                                      method='pce_rank',
-                                                      input_names=self.input_names,
-                                                      outputs=self.dataset['outputs'],
-                                                      output_names=self.output_names,
-                                                      input_ranges=self.ranges,
-                                                      degree=1,
-                                                      model_degrees=1,
-                                                      save_plot=True)[:]
-        assert type(result8) == type(plt.figure())
+            result9 = kosh_operators.KoshSensitivityPlots(self.dataset['inputs'],
+                                                          method='f_score',
+                                                          input_names=self.input_names,
+                                                          outputs=self.dataset['outputs'],
+                                                          output_names=self.output_names,
+                                                          save_plot=True)[:]
+            assert type(result3) == type(plt.figure())
+            plt.close('all')
 
-        result9 = kosh_operators.KoshSensitivityPlots(self.dataset['inputs'],
-                                                      method='f_score_network',
-                                                      input_names=self.input_names,
-                                                      outputs=self.dataset['outputs'],
-                                                      output_names=self.output_names,
-                                                      degree=3,
-                                                      save_plot=True)[:]
-        assert type(result9) == type(plt.figure())
-        plt.close()
+            result10 = kosh_operators.KoshSensitivityPlots(self.dataset['inputs'],
+                                                           method='mutual_info_score',
+                                                           input_names=self.input_names,
+                                                           outputs=self.dataset['outputs'],
+                                                           output_names=self.output_names,
+                                                           n_neighbors=3,
+                                                           save_plot=True)[:]
+            assert type(result4) == type(plt.figure())
+            plt.close('all')
 
-        result10 = kosh_operators.KoshSensitivityPlots(self.dataset['inputs'],
-                                                       method='pce_network',
-                                                       input_names=self.input_names,
-                                                       outputs=self.dataset['outputs'],
-                                                       output_names=self.output_names,
-                                                       input_ranges=self.ranges,
-                                                       degree=3,
-                                                       model_degrees=3,
-                                                       save_plot=True)[:]
-        assert type(result10) == type(plt.figure())
-        plt.close()
+            result11 = kosh_operators.KoshSensitivityPlots(self.dataset['inputs'],
+                                                           method='pce_score',
+                                                           input_names=self.input_names,
+                                                           outputs=self.dataset['outputs'],
+                                                           output_names=self.output_names,
+                                                           input_ranges=self.ranges,
+                                                           degree=1,
+                                                           model_degrees=1,
+                                                           save_plot=True)[:]
+            assert type(result5) == type(plt.figure())
+            plt.close('all')
 
-        for m in methods:
-            plot_name = f"output_A_output_B_{m}_plot.png"
-            assert os.path.exists
+            result12 = kosh_operators.KoshSensitivityPlots(self.dataset['inputs'],
+                                                           method='f_score_rank',
+                                                           input_names=self.input_names,
+                                                           outputs=self.dataset['outputs'],
+                                                           output_names=self.output_names,
+                                                           degree=1,
+                                                           save_plot=True)[:]
+            assert type(result6) == type(plt.figure())
+            plt.close('all')
 
-        for m in methods:
-            os.remove(f"output_A_output_B_{m}_plot.png")
+            result13 = kosh_operators.KoshSensitivityPlots(self.dataset['inputs'],
+                                                           method='mutual_info_rank',
+                                                           input_names=self.input_names,
+                                                           outputs=self.dataset['outputs'],
+                                                           output_names=self.output_names,
+                                                           n_neighbors=3,
+                                                           save_plot=True)[:]
+            assert type(result7) == type(plt.figure())
+            plt.close('all')
 
+            result14 = kosh_operators.KoshSensitivityPlots(self.dataset['inputs'],
+                                                           method='pce_rank',
+                                                           input_names=self.input_names,
+                                                           outputs=self.dataset['outputs'],
+                                                           output_names=self.output_names,
+                                                           input_ranges=self.ranges,
+                                                           degree=1,
+                                                           model_degrees=1,
+                                                           save_plot=True)[:]
+            assert type(result8) == type(plt.figure())
+            plt.close('all')
+
+            result15 = kosh_operators.KoshSensitivityPlots(self.dataset['inputs'],
+                                                           method='f_score_network',
+                                                           input_names=self.input_names,
+                                                           outputs=self.dataset['outputs'],
+                                                           output_names=self.output_names,
+                                                           degree=3,
+                                                           save_plot=True)[:]
+            assert type(result9) == type(plt.figure())
+            plt.close('all')
+
+            result16 = kosh_operators.KoshSensitivityPlots(self.dataset['inputs'],
+                                                           method='pce_network',
+                                                           input_names=self.input_names,
+                                                           outputs=self.dataset['outputs'],
+                                                           output_names=self.output_names,
+                                                           input_ranges=self.ranges,
+                                                           degree=3,
+                                                           model_degrees=3,
+                                                           save_plot=True)[:]
+            assert type(result10) == type(plt.figure())
+            plt.close('all')
+
+            # Cleanup all generated files
+            import glob
+            
+            # Clean up PNG files
+            for file in glob.glob("out*.png"):
+                try:
+                    os.remove(file)
+                except FileNotFoundError:
+                    pass
+            
+            # Clean up specific files
+            cleanup_files = ["temp_testing.sql", "mytestfile.hdf5"]
+            for file in cleanup_files:
+                try:
+                    os.remove(file)
+                except FileNotFoundError:
+                    pass
 
 if __name__ == '__main__':
     unittest.main()

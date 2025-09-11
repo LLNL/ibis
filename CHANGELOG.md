@@ -6,12 +6,14 @@
 
 ## 1.1.1 Release
 
+### Description
+
 This release includes some bug fixes and an update to the basic descriptions.
 
 ### Improvements
 
 * Updated descriptions for the main modules
-* More explanation for descrepancy MCMC sampling
+* More explanation for discrepancy MCMC sampling
 
 ### Bug fixes
 

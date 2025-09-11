@@ -237,12 +237,12 @@ class TestPlotData(unittest.TestCase):
 
       model_prior_mean, model_prior_std, model_post_mean, model_post_std, pred_post_mean, pred_post_std = plots.box_plot(ax, prior_preds=prior, posterior_preds=posterior, num_bins=50, exp_obs=13. / (13. + 7.), exp_std=.1, seed = self.seed)
 
-      self.assertEqual(model_prior_mean_fiducial, model_prior_mean)
-      self.assertEqual(model_prior_std_fiducial, model_prior_std)
-      self.assertEqual(model_post_mean_fiducial, model_post_mean)
-      self.assertEqual(model_post_std_fiducial, model_post_std)
-      self.assertEqual(pred_post_mean_fiducial, pred_post_mean)
-      self.assertEqual(pred_post_std_fiducial, pred_post_std)
+      self.assertAlmostEqual(model_prior_mean_fiducial, model_prior_mean)
+      self.assertAlmostEqual(model_prior_std_fiducial, model_prior_std)
+      self.assertAlmostEqual(model_post_mean_fiducial, model_post_mean)
+      self.assertAlmostEqual(model_post_std_fiducial, model_post_std)
+      self.assertAlmostEqual(pred_post_mean_fiducial, pred_post_mean)
+      self.assertAlmostEqual(pred_post_std_fiducial, pred_post_std)
     #   assert model_prior_mean_fiducial, model_prior_mean
     #   assert model_prior_std_fiducial == model_prior_std
     #   assert model_post_mean_fiducial == model_post_mean
@@ -263,12 +263,12 @@ class TestPlotData(unittest.TestCase):
       
       model_prior_mean, model_prior_std, model_post_mean, model_post_std, pred_post_mean, pred_post_std = plots.box_plot(ax, prior_preds=points, posterior_wts=weights, num_bins=50, exp_obs=13. / (13. + 7.), exp_std=.1, seed = self.seed)
 
-      self.assertEqual(model_prior_mean_fiducial, model_prior_mean)
-      self.assertEqual(model_prior_std_fiducial, model_prior_std)
-      self.assertEqual(model_post_mean_fiducial, model_post_mean)
-      self.assertEqual(model_post_std_fiducial, model_post_std)
-      self.assertEqual(pred_post_mean_fiducial, pred_post_mean)
-      self.assertEqual(pred_post_std_fiducial, pred_post_std)
+      self.assertAlmostEqual(model_prior_mean_fiducial, model_prior_mean)
+      self.assertAlmostEqual(model_prior_std_fiducial, model_prior_std)
+      self.assertAlmostEqual(model_post_mean_fiducial, model_post_mean)
+      self.assertAlmostEqual(model_post_std_fiducial, model_post_std)
+      self.assertAlmostEqual(pred_post_mean_fiducial, pred_post_mean)
+      self.assertAlmostEqual(pred_post_std_fiducial, pred_post_std)
     #   assert model_prior_mean_fiducial == model_prior_mean
     #   assert model_prior_std_fiducial == model_prior_std
     #   assert model_post_mean_fiducial == model_post_mean

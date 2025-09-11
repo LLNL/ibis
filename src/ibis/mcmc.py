@@ -692,11 +692,13 @@ class DefaultMCMC(MCMC):
         if not prior_only:
             for idx, output in enumerate(self.outputs.values()):
                 ls_input_vals = [current_point[ipt] for ipt in output.inputs]
-                z_vec[idx], z_std = output.surrogate_model.predict(np.array([ls_input_vals]), return_std=True)
+                pred_result, std_result = output.surrogate_model.predict(np.array([ls_input_vals]), return_std=True)
+                z_vec[idx] = pred_result.item() if hasattr(pred_result, 'item') else pred_result[0]
+                z_std = std_result.item() if hasattr(std_result, 'item') else std_result[0]
                 y_vec[idx] = output.observed_value
                 sigma_y[idx] = output.observed_std
                 if z_std is not None:
-                    sigma_z[idx] = z_std
+                    sigma_z[idx] = z_std.item() if hasattr(z_std, 'item') else z_std
 
             likelihood = sts.multivariate_normal(y_vec, np.diag(sigma_y ** 2) + np.diag(sigma_z ** 2)).logpdf(z_vec)
 
@@ -806,7 +808,9 @@ class DiscrepancyMCMC(DefaultMCMC):
 
             for idx, output in enumerate(self.outputs.values()):
                 ls_input_vals = [current_point[ipt] for ipt in output.inputs]
-                z_vec[idx], z_std = output.surrogate_model.predict(np.array([ls_input_vals]), return_std=True)
+                pred_result, std_result = output.surrogate_model.predict(np.array([ls_input_vals]), return_std=True)
+                z_vec[idx] = pred_result.item() if hasattr(pred_result, 'item') else pred_result
+                z_std = std_result.item() if hasattr(std_result, 'item') else std_result
                 y_vec[idx] = output.observed_value
                 sigma_y[idx] = output.observed_std ** 2
                 sigma_delta[idx, idx] = current_point['tau_{}'.format(output.quantity)] ** 2
