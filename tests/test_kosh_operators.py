@@ -3,6 +3,8 @@ from __future__ import division
 from __future__ import absolute_import
 import os
 import sys
+import string
+import random
 import unittest
 import warnings
 import numpy as np
@@ -116,8 +118,10 @@ class TestUQMethods(unittest.TestCase):
             f.create_dataset("sobol_y", data=self.sobol_y)
             f.create_dataset("inputs", data=self.X)
             f.create_dataset("outputs", data=self.Y)
-
-        self.store = kosh.connect("temp_testing.sql")
+        res = ''.join(random.choices(string.ascii_uppercase +
+                            string.digits, k=7))
+        self.store_name = str(res) + 'store.sql'
+        self.store = kosh.connect(self.store_name)
         self.dataset = self.store.create("uq_data")
         self.dataset.associate([fileName], 'hdf5')
 
@@ -461,7 +465,7 @@ class TestUQMethods(unittest.TestCase):
                     pass
             
             # Clean up specific files
-            cleanup_files = ["temp_testing.sql", "mytestfile.hdf5"]
+            cleanup_files = [self.store_name, "mytestfile.hdf5"]
             for file in cleanup_files:
                 try:
                     os.remove(file)
